@@ -22,9 +22,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Install, build, and upload your site
         uses: withastro/action@v1
-        with:
-          package-manager: bun
-          node-version: 20 # The specific version of Node that should be used to build your site. Defaults to 16. (optional)
 
   deploy:
     needs: build
