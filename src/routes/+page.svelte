@@ -1,5 +1,34 @@
 <script>
 	import me from '$lib/assets/profile.svg';
+	import { gsap } from 'gsap';
+
+	$effect(async () => {
+		const { TextPlugin } = await import('gsap/TextPlugin');
+
+		gsap.registerPlugin(TextPlugin);
+		const tl = gsap.timeline();
+
+		tl.from('.hero-content', { scale: 0.5, opacity: 0, duration: 0.5 }) //e
+			.to('#hello', {
+				duration: 1,
+				text: "Hi! I'm Bryan Hu",
+				ease: 'none'
+			});
+		tl.to('#bio', {
+			duration: 1,
+			text: 'Short bio',
+			ease: 'none'
+		});
+		tl.from(
+			'#socials > a',
+			{
+				stagger: 0.5,
+				duration: 1,
+				opacity: 0
+			},
+			'<'
+		);
+	});
 	// const picturesOfMe = import.meta.glob('$lib/assets/me_*.{png,jpg}', { eager: true });
 </script>
 
@@ -14,10 +43,10 @@
 		</div> -->
 		<img src={me} class="h-46 w-46 rounded-box shadow-2xl" alt="My profile icon" />
 		<div>
-			<h1 class="text-5xl font-bold">Hi! I'm Bryan Hu</h1>
-			<p class="py-6">Short bio</p>
+			<h1 class="text-5xl font-bold" id="hello" />
+			<p class="py-6" id="bio" />
 			<!-- Social icons -->
-			<div class="flex-row">
+			<div class="flex-row" id="socials">
 				<a href="https://github.com/ThatXliner" class="inline-block text-5xl i-mdi-github" />
 				<a
 					href="https://www.instagram.com/thatxliner/"
@@ -29,7 +58,7 @@
 				/>
 			</div>
 			<!-- Fade to black to transition to what i made -->
-			<button class="btn btn-primary"
+			<button class="btn btn-primary" id="see-more"
 				>See more <svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
