@@ -4,7 +4,7 @@
 </script>
 
 <div class="hero min-h-screen orange-bg">
-	<div class="hero-content flex-col lg:flex-row">
+	<div class="hero-content w-full flex-col lg:flex-row justify-center">
 		<!-- <div class="h-96 w-96 carousel rounded-box shadow-2xl">
 			{#each Object.keys(picturesOfMe) as me}
 				<div class="carousel-item w-96 overflow-clip">
@@ -12,20 +12,20 @@
 				</div>
 			{/each}
 		</div> -->
-		<img src={me} class="object-cover h-46 w-46 rounded-box shadow-2xl" alt="My profile icon" />
+		<img src={me} class="h-46 w-46 rounded-box shadow-2xl" alt="My profile icon" />
 		<div>
 			<h1 class="text-5xl font-bold">Hi! I'm Bryan Hu</h1>
 			<p class="py-6">Short bio</p>
 			<!-- Social icons -->
 			<div class="flex-row">
-				<a href="https://github.com/ThatXliner" class="inline-block text-5xl i-mdi:github" />
+				<a href="https://github.com/ThatXliner" class="inline-block text-5xl i-mdi-github" />
 				<a
 					href="https://www.instagram.com/thatxliner/"
-					class="inline-block text-5xl i-mdi:instagram"
+					class="inline-block text-5xl i-mdi-instagram"
 				/>
 				<a
 					href="https://www.linkedin.com/in/thatxliner/"
-					class="inline-block text-5xl i-mdi:linkedin"
+					class="inline-block text-5xl i-mdi-linkedin"
 				/>
 			</div>
 			<!-- Fade to black to transition to what i made -->
