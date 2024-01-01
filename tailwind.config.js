@@ -12,5 +12,6 @@ export default {
 		iconsPlugin({
 			collections: getIconCollections(['mdi'])
 		})
-	]
+	],
+	daisyui: { themes: ['light'] }
 };
