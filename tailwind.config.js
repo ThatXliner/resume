@@ -13,5 +13,5 @@ export default {
 			collections: getIconCollections(['mdi'])
 		})
 	],
-	daisyui: { themes: ['light'] }
+	daisyui: { themes: ['light', 'dark'] }
 };
