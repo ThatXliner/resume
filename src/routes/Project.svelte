@@ -2,7 +2,7 @@
 	const { from } = $props<{ from: 'left' | 'right' }>();
 </script>
 
-<div class="h-[50vh] mx-[15vw] m{from.charAt(0)}-auto" id="card-fly-{from}">
+<div class="h-[50vh] {from === 'left' ? 'ml-auto' : 'mr-auto'}" id="card-fly-{from}">
 	<div class="card w-96 bg-base-100 shadow-xl">
 		<figure>
 			<img
