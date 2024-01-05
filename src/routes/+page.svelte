@@ -126,8 +126,8 @@
 				> with others
 			</h2>
 			<div class="flex flex-col pt-[15rem] px-[15vw]">
-				<Project from="left" />
-				<Project from="right" />
+				<Project from="left" repo="EvanZhouDev/zyma" />
+				<Project from="right" repo="ThatXliner/acts-project" />
 				<!-- <Project from="left" />
 				<Project from="right" /> -->
 			</div>
