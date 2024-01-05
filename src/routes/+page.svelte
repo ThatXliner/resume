@@ -125,7 +125,7 @@
 					class="blue-gradient moving-gradient gradient-text">collaboration</span
 				> with others
 			</h2>
-			<div class="flex flex-col pt-[15rem]">
+			<div class="flex flex-col pt-[15rem] px-[15vw]">
 				<Project from="left" />
 				<Project from="right" />
 				<!-- <Project from="left" />
