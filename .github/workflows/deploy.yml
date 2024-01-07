@@ -41,6 +41,8 @@ jobs:
               uses: lhotari/action-upterm@v1
             - name: Build site
               run: bun run build
+              env:
+                  GITHUB_TOKEN: ${{ secrets.ASTRO_GITHUB_TOKEN }}
             - name: Setup Pages
               uses: actions/configure-pages@v3
             - name: Upload artifact
