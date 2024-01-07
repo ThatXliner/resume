@@ -1,0 +1,140 @@
+---
+interface Props {
+	repo: string;
+	from?: "left" | "right";
+	showDescription?: boolean;
+	tech?: string[];
+	collaborators?: string[];
+	// repo:  extends `${infer Owner}/${infer Repo}`;
+}
+const { from, repo, showDescription, collaborators, tech } = Astro.props;
+
+const [owner, name] = repo.split("/");
+const QUERY = `query {
+  repository(owner: "${owner}", name: "${name}") {
+    description
+    url
+    homepageUrl
+	openGraphImageUrl
+    languages(first: 5) {
+      nodes {
+        name
+      }
+    }
+    
+  }
+}`;
+const res = await fetch("https://api.github.com/graphql", {
+	method: "POST",
+	headers: {
+		"Content-Type": "application/json",
+		Accept: "application/json",
+		Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+	},
+	body: JSON.stringify({ query: QUERY }),
+});
+const json = await res.json();
+const data: {
+	repository: {
+		description: string;
+		url: string;
+		homepageUrl: string;
+		openGraphImageUrl: string;
+	};
+} = json.data;
+---
+
+<div
+	class:list={[
+		"h-[50vh]",
+		{ "ml-auto": from === "left" },
+		{ "mr-auto": from === "right" },
+	]}
+	id={`card-fly-${from}`}
+>
+	<div class="card w-96 bg-base-100 shadow-xl">
+		<figure>
+			<img
+				src={data.repository.openGraphImageUrl}
+				alt={repo + "\n" + data.repository.description}
+			/>
+		</figure>
+		<div class="card-body">
+			{
+				showDescription && (
+					<>
+						<h2 class="card-title">{repo}</h2>
+						<p>{data.repository.description}</p>
+					</>
+				)
+			}
+
+			<div class="flex items-center space-x-2">
+				<span class="font-bold text-lg">Built With:</span>
+				{
+					tech ? (
+						<img
+							class="max-w-[65%] inline"
+							src={
+								"https://skillicons.dev/icons?i=" +
+								tech
+									?.map((x) =>
+										x
+											.replace(/[^0-9a-zA-Z]/, "")
+											.toLowerCase()
+									)
+									?.join(",")
+							}
+							alt={tech?.join(", ")}
+							title={tech?.join(", ")}
+						/>
+					) : (
+						<span class="text-lg">Love ❤️</span>
+					)
+				}
+			</div>
+
+			<div class="card-actions items-center">
+				<a
+					href={data.repository.url}
+					class="inline-block text-5xl i-mdi-github"></a>
+				<a href={data.repository.homepageUrl} class="inline-block"
+					><svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						class="w-12 h-12"
+					>
+						<path
+							d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z"
+						></path>
+						<path
+							d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z"
+						></path>
+					</svg>
+				</a>
+			</div>{
+				collaborators && (
+					<div class="text-lg">
+						<span>With</span>
+						{collaborators.map((name, i) => {
+							return (
+								<>
+									<a
+										href={`https://github.com/${name}`}
+										class="link link-primary"
+									>
+										@{name}
+									</a>
+									<span>
+										{i !== collaborators.length - 1 && ", "}
+									</span>
+								</>
+							);
+						})}
+					</div>
+				)
+			}
+		</div>
+	</div>
+</div>

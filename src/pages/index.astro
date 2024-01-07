@@ -1,5 +1,5 @@
 ---
-import Project from "../components/Project.astro";
+import GithubRepo from "../components/GithubRepo.astro";
 import Layout from "../layouts/Layout.astro";
 import { Image } from "astro:assets";
 import me from "../assets/images/profile.svg";
@@ -137,10 +137,57 @@ import me from "../assets/images/profile.svg";
 					> with others
 				</h2>
 				<div class="flex flex-col pt-[15rem] px-[15vw]">
-					<Project from="left" repo="EvanZhouDev/zyma" />
-					<Project from="right" repo="ThatXliner/acts-project" />
-					<!-- <Project from="left" />
-				<Project from="right" /> -->
+					<GithubRepo
+						from="left"
+						repo="EvanZhouDev/zyma"
+						collaborators={["EvanZhouDev"]}
+						tech={[
+							"Next.js",
+							"React",
+							"Supabase",
+							"TailwindCSS",
+							"Vercel",
+							"TypeScript",
+						]}
+					/>
+					<GithubRepo
+						from="right"
+						repo="ThatXliner/acts-project"
+						tech={["JavaScript", "HTML", "CSS", "GitHub"]}
+						collaborators={["EvanZhouDev", "DragonXDev"]}
+					/>
+					<GithubRepo
+						from="left"
+						repo="ThatXliner/svgtoconic"
+						tech={["Python"]}
+						collaborators={["vrejhead"]}
+					/>
+				</div>
+			</div>
+		</section>
+		<section
+			id="libraries"
+			class="min-h-screen py-11 bg-black flex flex-col"
+			data-theme="dark"
+		>
+			<div class="w-full flex-col">
+				<h2 class="text-6xl font-bold mx-[10%] mt-6">
+					How about some of my <span
+						class="red-gradient moving-gradient gradient-text"
+						>libraries</span
+					>?
+				</h2>
+				<div class="flex flex-col pt-[15rem] px-[15vw]">
+					<GithubRepo
+						from="right"
+						repo="ThatXliner/unmarkd"
+						tech={["Python"]}
+					/>
+					<GithubRepo
+						from="left"
+						repo="ThatXliner/aioudp"
+						tech={["Python"]}
+					/>
 				</div>
 			</div>
 		</section>
@@ -199,6 +246,17 @@ import me from "../assets/images/profile.svg";
 			rgba(20, 131, 232, 1) 50%,
 			rgba(82, 119, 210, 1) 75%,
 			rgba(65, 89, 217, 1) 100%
+		);
+	}
+	.red-gradient {
+		background: rgb(217, 65, 65);
+		background: linear-gradient(
+			90deg,
+			rgba(217, 65, 65, 1) 0%,
+			rgba(210, 82, 82, 1) 25%,
+			rgba(232, 20, 20, 1) 50%,
+			rgba(210, 82, 82, 1) 75%,
+			rgba(217, 65, 65, 1) 100%
 		);
 	}
 	.moving-gradient {
