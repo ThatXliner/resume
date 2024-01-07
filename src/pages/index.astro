@@ -125,79 +125,86 @@ import me from "../assets/images/profile.svg";
 							></path>
 						</svg>
 					</button>
+					<div class="text-lg my-2">
+						<a class="link">Projects</a> | <a class="link"
+							>My Story</a
+						> | <a class="link">Skill Breakdown</a> | <a
+							class="link">Contact</a
+						>
+					</div>
 				</div>
 			</div>
 		</section>
-		<section
-			id="collab"
-			class="min-h-screen py-11 bg-black flex flex-col"
-			data-theme="dark"
-		>
-			<div class="w-full flex-col">
-				<h2 class="text-6xl font-bold mx-[10%] mt-6">
-					Here are some projects that I made in <span
-						class="blue-gradient moving-gradient gradient-text"
-						>collaboration</span
-					> with others
-				</h2>
-				<div class="flex flex-col pt-[15rem] px-[15vw]">
-					<GithubRepo
-						from="left"
-						repo="EvanZhouDev/zyma"
-						collaborators={["EvanZhouDev"]}
-						tech={[
-							"Next.js",
-							"React",
-							"Supabase",
-							"TailwindCSS",
-							"Vercel",
-							"TypeScript",
-						]}
-					/>
-					<GithubRepo
-						from="right"
-						repo="ThatXliner/acts-project"
-						tech={["JavaScript", "HTML", "CSS", "GitHub"]}
-						collaborators={["EvanZhouDev", "DragonXDev"]}
-					/>
-					<GithubRepo
-						from="left"
-						repo="ThatXliner/svgtoconic"
-						tech={["Python"]}
-						collaborators={["vrejhead"]}
-					/>
-				</div>
-			</div>
-		</section>
-		<section
-			id="libraries"
-			class="min-h-screen py-11 bg-black flex flex-col"
-			data-theme="dark"
-		>
-			<div class="w-full flex-col">
-				<h2 class="text-6xl font-bold mx-[10%] mt-6">
-					How about some of my <span
-						class="red-gradient moving-gradient gradient-text"
-						>libraries</span
-					>?
-				</h2>
-				<div class="flex flex-col pt-[15rem] px-[15vw]">
-					<GithubRepo
-						from="right"
-						repo="ThatXliner/unmarkd"
-						tech={["Python"]}
-					/>
-					<GithubRepo
-						from="left"
-						repo="ThatXliner/aioudp"
-						tech={["Python"]}
-					/>
-				</div>
-			</div>
-		</section>
-		<!-- "Some apps I built by myself" -->
-		<!-- "...and now for a little fun" -->
 	</main>
+	<section
+		id="collab"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				Here are some projects that I made in <span
+					class="blue-gradient moving-gradient gradient-text"
+					>collaboration</span
+				> with others
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo
+					from="left"
+					repo="EvanZhouDev/zyma"
+					collaborators={["EvanZhouDev"]}
+					tech={[
+						"Next.js",
+						"React",
+						"Supabase",
+						"TailwindCSS",
+						"Vercel",
+						"TypeScript",
+					]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/acts-project"
+					tech={["JavaScript", "HTML", "CSS", "GitHub"]}
+					collaborators={["EvanZhouDev", "DragonXDev"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/svgtoconic"
+					tech={["Python"]}
+					collaborators={["vrejhead"]}
+				/>
+			</div>
+		</div>
+	</section>
+	<section
+		id="libraries"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				How about some of my <span
+					class="red-gradient moving-gradient gradient-text"
+					>libraries</span
+				>?
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/unmarkd"
+					tech={["Python"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/aioudp"
+					tech={["Python"]}
+				/>
+			</div>
+		</div>
+	</section>
+	<!-- "Some apps I built by myself" -->
+	<!-- "...and now for a little fun" -->
 </Layout>
 
 <style>
