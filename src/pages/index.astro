@@ -44,21 +44,25 @@ import me from "../assets/images/profile.svg";
 			scrub: true,
 		},
 	});
-	gsap.from("#card-fly-right", {
-		x: "100vw",
-		duration: 1,
-		scrollTrigger: {
-			trigger: "#card-fly-right",
-			start: "top center",
-		},
+	document.querySelectorAll("#card-fly-right").forEach((element) => {
+		gsap.from(element, {
+			x: "100vw",
+			duration: 1,
+			scrollTrigger: {
+				trigger: "#card-fly-right",
+				start: "top center",
+			},
+		});
 	});
-	gsap.from("#card-fly-left", {
-		x: "-100vw",
-		duration: 1,
-		scrollTrigger: {
-			trigger: "#card-fly-left",
-			start: "top center",
-		},
+	document.querySelectorAll("#card-fly-left").forEach((element) => {
+		gsap.from(element, {
+			x: "-100vw",
+			duration: 1,
+			scrollTrigger: {
+				trigger: "#card-fly-left",
+				start: "top center",
+			},
+		});
 	});
 	document.getElementById("see-more")!.addEventListener("click", () => {
 		gsap.to(window, {
@@ -191,6 +195,8 @@ import me from "../assets/images/profile.svg";
 				</div>
 			</div>
 		</section>
+		<!-- "Some apps I built by myself" -->
+		<!-- "...and now for a little fun" -->
 	</main>
 </Layout>
 
