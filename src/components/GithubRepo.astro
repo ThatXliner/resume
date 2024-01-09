@@ -2,12 +2,14 @@
 interface Props {
 	repo: string;
 	from?: "left" | "right";
-	showDescription?: boolean;
+	hideDescription?: boolean;
 	tech?: string[];
 	collaborators?: string[];
+	badges?: string[];
 	// repo:  extends `${infer Owner}/${infer Repo}`;
 }
-const { from, repo, showDescription, collaborators, tech } = Astro.props;
+const { from, repo, hideDescription, collaborators, tech, badges } =
+	Astro.props;
 
 const [owner, name] = repo.split("/");
 const QUERY = `query {
@@ -55,16 +57,16 @@ const data: {
 	<div class="card w-96 bg-base-100 shadow-xl">
 		<figure>
 			<img
-				src={data.repository.openGraphImageUrl}
-				alt={repo + "\n" + data.repository.description}
+				src={data.repository?.openGraphImageUrl}
+				alt={repo + "\n" + data.repository?.description}
 			/>
 		</figure>
 		<div class="card-body">
 			{
-				showDescription && (
+				!hideDescription && (
 					<>
 						<h2 class="card-title">{repo}</h2>
-						<p>{data.repository.description}</p>
+						<p>{data.repository?.description}</p>
 					</>
 				)
 			}
@@ -96,9 +98,9 @@ const data: {
 
 			<div class="card-actions items-center">
 				<a
-					href={data.repository.url}
+					href={data.repository?.url}
 					class="inline-block text-5xl i-mdi-github"></a>
-				<a href={data.repository.homepageUrl} class="inline-block"
+				<a href={data.repository?.homepageUrl} class="inline-block"
 					><svg
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
@@ -130,6 +132,18 @@ const data: {
 										{i !== collaborators.length - 1 && ", "}
 									</span>
 								</>
+							);
+						})}
+					</div>
+				)
+			}{
+				badges && (
+					<div class="text-lg">
+						{badges.map((badge) => {
+							return (
+								<div class="badge badge-warning badge-outline">
+									{badge}
+								</div>
 							);
 						})}
 					</div>

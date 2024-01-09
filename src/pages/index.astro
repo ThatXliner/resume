@@ -64,20 +64,22 @@ import me from "../assets/images/profile.svg";
 			},
 		});
 	});
-	document.getElementById("see-more")!.addEventListener("click", () => {
-		gsap.to(window, {
-			duration: 0.5,
-			scrollTo: "#collab",
-			ease: "power2.inOUt",
-			onComplete: () => {
-				window.location.hash = "#collab";
-			},
-		});
-	});
+	document.querySelectorAll("[data-transition]").forEach((element) =>
+		element.addEventListener("click", () => {
+			gsap.to(window, {
+				duration: 0.5,
+				scrollTo: `#${element.dataset.transition}`,
+				ease: "power2.inOUt",
+				onComplete: () => {
+					window.location.hash = `#${element.dataset.transition}`;
+				},
+			});
+		})
+	);
 </script>
 <Layout title="My Resume">
 	<main class="orange-bg overflow-x-hidden" data-theme="light">
-		<section id="intro" class="hero min-h-screen">
+		<section id="intro" class="hero min-h-screen h-fit">
 			<div
 				class="hero-content w-full flex-col lg:flex-row justify-center"
 			>
@@ -109,27 +111,15 @@ import me from "../assets/images/profile.svg";
 							class="inline-block text-5xl i-mdi-linkedin"></a>
 					</div>
 					<!-- Fade to black to transition to what i made -->
-					<button class="btn btn-primary" id="see-more"
-						>See more <svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
-							></path>
-						</svg>
-					</button>
 					<div class="text-lg my-2">
-						<a class="link">Projects</a> | <a class="link"
-							>My Story</a
-						> | <a class="link">Skill Breakdown</a> | <a
-							class="link">Contact</a
+						<button class="link" data-transition="collab"
+							>Projects</button
+						> | <button class="link" data-transition="story"
+							>My Story</button
+						> | <button class="link" data-transition="breakdown"
+							>Skill Breakdown</button
+						> | <a class="link" href="mailto:thatxliner@gmail.com"
+							>Contact</a
 						>
 					</div>
 				</div>
@@ -138,7 +128,7 @@ import me from "../assets/images/profile.svg";
 	</main>
 	<section
 		id="collab"
-		class="min-h-screen py-11 bg-black flex flex-col"
+		class="min-h-screen py-11 h-fit bg-black flex flex-col"
 		data-theme="dark"
 	>
 		<div class="w-full flex-col">
@@ -149,6 +139,7 @@ import me from "../assets/images/profile.svg";
 				> with others
 			</h2>
 			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<!-- TODO: Fix the height scroll issue -->
 				<GithubRepo
 					from="left"
 					repo="EvanZhouDev/zyma"
@@ -161,18 +152,23 @@ import me from "../assets/images/profile.svg";
 						"Vercel",
 						"TypeScript",
 					]}
+					badges={["hackathon"]}
 				/>
 				<GithubRepo
 					from="right"
 					repo="ThatXliner/acts-project"
+					hideDescription={true}
 					tech={["JavaScript", "HTML", "CSS", "GitHub"]}
 					collaborators={["EvanZhouDev", "DragonXDev"]}
+					badges={["school project"]}
 				/>
 				<GithubRepo
 					from="left"
 					repo="ThatXliner/svgtoconic"
 					tech={["Python"]}
+					hideDescription={true}
 					collaborators={["vrejhead"]}
+					badges={["fun"]}
 				/>
 			</div>
 		</div>
@@ -202,6 +198,151 @@ import me from "../assets/images/profile.svg";
 				/>
 			</div>
 		</div>
+	</section>
+	<!-- <section
+		id="contributions"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				My open source contributions:
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/direnv"
+					tech={["Python", "C++", "Arduino"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/sttt"
+					tech={["Rust"]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/pyt2"
+					tech={["Jinja", "Python"]}
+				/>
+			</div>
+		</div>
+	</section> -->
+	<section
+		id="utilities"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				As a productivity fanatic, I made several utilities
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo from="right" repo="ThatXliner/rt" tech={["Rust"]} />
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/idae"
+					tech={["Python"]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/apps"
+					tech={["Svelte", "GitHub"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/scripts"
+					tech={["Python"]}
+				/>
+			</div>
+		</div>
+	</section>
+	<section
+		id="full-stack"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				I got several full-stack apps, just to name a few
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/wuzursched"
+					tech={["Svelte", "TypeScript", "Vercel", "Supabase"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/waterjug"
+					tech={["Svelte", "TypeScript", "Vercel"]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/skootils"
+					tech={["Svelte", "Tauri"]}
+				/>
+			</div>
+		</div>
+	</section>
+	<section
+		id="fun"
+		class="min-h-screen py-11 bg-black flex flex-col"
+		data-theme="dark"
+	>
+		<div class="w-full flex-col">
+			<h2 class="text-6xl font-bold mx-[10%] mt-6">
+				And some more projects, <span
+					class="rainbow-gradient moving-gradient gradient-text"
+					>just for fun</span
+				>
+			</h2>
+			<div class="flex flex-col pt-[15rem] px-[15vw] overflow-x-hidden">
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/FADAIG"
+					tech={["Python", "C++", "Arduino"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/sttt"
+					tech={["Rust"]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/pyt2"
+					tech={["Jinja", "Python"]}
+				/>
+				<GithubRepo
+					from="left"
+					repo="ThatXliner/rrd"
+					tech={["C++", "CMake"]}
+				/>
+				<GithubRepo
+					from="right"
+					repo="ThatXliner/fall-syntax"
+					tech={["Less", "CSS"]}
+				/>
+			</div>
+		</div>
+	</section>
+	<section
+		id="story"
+		class="min-h-screen py-11 bg-amber-100 flex flex-col"
+		data-theme="light"
+	>
+		<h2 class="text-9xl ml-3 font-mono">My story</h2>
+		<p class="p-5 text-3xl font-serif max-w-md">
+			I'm Bryan Hu, and I'm very passionate about making things that can
+			help people and learning new things. (TODO)
+		</p>
+	</section>
+	<section
+		id="breakdown"
+		class="min-h-screen py-11 bg-teal-400 flex flex-col"
+		data-theme="light"
+	>
+		<h2 class="text-9xl ml-3 font-mono">Skill Breakdown</h2>
+		<p class="p-5 text-3xl max-w-md">I'm good at Python. (TODO)</p>
 	</section>
 	<!-- "Some apps I built by myself" -->
 	<!-- "...and now for a little fun" -->
@@ -270,6 +411,22 @@ import me from "../assets/images/profile.svg";
 			rgba(232, 20, 20, 1) 50%,
 			rgba(210, 82, 82, 1) 75%,
 			rgba(217, 65, 65, 1) 100%
+		);
+	}
+	.rainbow-gradient {
+		background: linear-gradient(
+			90deg,
+			rgba(255, 0, 0, 1) 0%,
+			rgba(255, 154, 0, 1) 10%,
+			rgba(208, 222, 33, 1) 20%,
+			rgba(79, 220, 74, 1) 30%,
+			rgba(63, 218, 216, 1) 40%,
+			rgba(47, 201, 226, 1) 50%,
+			rgba(28, 127, 238, 1) 60%,
+			rgba(95, 21, 242, 1) 70%,
+			rgba(186, 12, 248, 1) 80%,
+			rgba(251, 7, 217, 1) 90%,
+			rgba(255, 0, 0, 1) 100%
 		);
 	}
 	.moving-gradient {
