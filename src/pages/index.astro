@@ -68,9 +68,11 @@ import me from "../assets/images/profile.svg";
 		element.addEventListener("click", () => {
 			gsap.to(window, {
 				duration: 0.5,
+				// @ts-ignore
 				scrollTo: `#${element.dataset.transition}`,
 				ease: "power2.inOUt",
 				onComplete: () => {
+					// @ts-ignore
 					window.location.hash = `#${element.dataset.transition}`;
 				},
 			});
