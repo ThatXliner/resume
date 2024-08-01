@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+  import mewithbg from "../assets/images/mewithbg.png";
+  import menobg from "../assets/images/menobg.png";
   import "atropos/css";
   import { onMount } from "svelte";
   import Atropos from "atropos";
@@ -6,6 +8,7 @@
   onMount(() => {
     const atropos = new Atropos({
       el: container,
+      // shadow: false,
       // options
     });
     return () => {
@@ -19,6 +22,7 @@
     <div class="atropos-rotate">
       <div class="atropos-inner">
         <slot />
+
         <!--
           Element with negative offset will move in reverse direction,
           making it appear behind the scene

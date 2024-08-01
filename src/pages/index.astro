@@ -2,7 +2,11 @@
 import { map } from "astro/zod";
 import Layout from "../layouts/Layout.astro";
 import PerspectiveHoverCard from "../components/PerspectiveHoverCard.svelte";
+import Atropos from "../components/Atropos.svelte";
+import mewithbg from "../assets/images/mewithbg.png";
+import menobg from "../assets/images/menobg.png";
 import { Icon } from "astro-icon/components";
+import { Image } from "astro:assets";
 const icons = [
   "logos:github-icon",
   "logos:git-icon",
@@ -43,7 +47,21 @@ const icons = [
 
 <Layout title="My Resume">
   <section class="flex w-full h-screen">
-    <div class="flex-1/2 bg-blue-500 w-full">Pic</div>
+    <div class="flex-1/2 w-full p-14">
+      <!-- <div class="absolute z-99"> -->
+      <div class="relative">
+        <Atropos client:only>
+          <img src={mewithbg.src} alt="Background" class="rounded-box" />
+          <img
+            src={menobg.src}
+            alt="Me"
+            data-atropos-offset="5"
+            class="absolute top-0"
+          />
+        </Atropos>
+      </div>
+      <!-- </div> -->
+    </div>
     <div class="flex-1/2 w-full px-3">
       <div class="flex flex-col justify-center h-full">
         <p class="text-8xl text-center my-5 text-shadow">hello.</p>
