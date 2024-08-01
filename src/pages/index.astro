@@ -1,15 +1,57 @@
 ---
+import { map } from "astro/zod";
 import Layout from "../layouts/Layout.astro";
+import PerspectiveHoverCard from "../components/PerspectiveHoverCard.svelte";
+import { Icon } from "astro-icon/components";
+const icons = [
+  "logos:github-icon",
+  "logos:git-icon",
+  "logos:discord-icon",
+  "skill-icons:atom",
+  "vscode-icons:file-type-vscode",
+
+  "logos:supabase-icon",
+  "logos:vercel-icon",
+  "logos:tauri",
+
+  "logos:nextjs-icon",
+  "logos:svelte-icon",
+  "logos:vitejs",
+  "logos:react",
+
+  "simple-icons:arduino",
+  "logos:raspberry-pi",
+  "logos:astro-icon",
+  "logos:css-3",
+  "logos:sass",
+  "logos:tailwindcss-icon",
+  "logos:bootstrap",
+  "logos:daisyui",
+  "logos:html-5",
+  "logos:javascript",
+  "logos:typescript-icon",
+  "logos:python",
+  "logos:markdown",
+  "skill-icons:sqlite",
+  "skill-icons:regex-light",
+  "logos:selenium",
+  "logos:rust",
+  "logos:java",
+  "vscode-icons:file-type-cpp3",
+];
 ---
 
 <Layout title="My Resume">
   <section class="flex w-full h-screen">
     <div class="flex-1/2 bg-blue-500 w-full">Pic</div>
     <div class="flex-1/2 w-full px-3">
-      <p class="text-5xl font-mono">hello.</p>
-      <p class="leading-relaxed prose">
-        Hello! Welcome to my resume. Here you will find all of my
-        qualifications, skills, past experiences, and even my personal story
+      <div class="flex flex-col justify-center h-full">
+        <p class="text-8xl text-center my-5 text-shadow">hello.</p>
+        <div class="divider"></div>
+        <p class="leading-relaxed prose w-xs mx-auto">
+          Hello! Welcome to my resume. Here you will find all of my
+          qualifications, skills, past experiences, and even my personal story
+        </p>
         <button class="btn btn-primary"
           >See more <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -23,24 +65,35 @@ import Layout from "../layouts/Layout.astro";
               clip-rule="evenodd"></path>
           </svg>
         </button>
-      </p>
-      <h2 class="text-4xl">Skillset</h2>
-      <p>
-        Hover over every card to view a brief overview of my experience with
-        these technologies
-      </p>
-      <div>
-        <h3 class="text-2xl">Languages</h3>
-        <div class="flex w-full justify-evenly"></div>
-        <h3 class="text-2xl">Frameworks</h3>
-        <div class="flex w-full justify-evenly"></div>
-        <h3 class="text-2xl">DevOps</h3>
-        <div class="flex w-full justify-evenly"></div>
-      </div>
-      <h2 class="text-4xl">Experiences & Education</h2>
-      <div class="divider"></div>
-      <div>
-        <!-- Socials -->
+        <div class="divider"></div>
+        <h4 class="text-lg font-bold mx-auto text-gray">Skillset</h4>
+        <div class="flex flex-wrap">
+          {
+            icons.map((icon) => (
+              <PerspectiveHoverCard client:only>
+                <Icon class="skill m-2" name={icon} size={50} />
+              </PerspectiveHoverCard>
+            ))
+          }
+        </div>
+        <!-- <h2 class="text-4xl">Skillset</h2>
+        <p>
+          Hover over every card to view a brief overview of my experience with
+          these technologies
+        </p>
+        <div>
+          <h3 class="text-2xl">Languages</h3>
+          <div class="flex w-full justify-evenly"></div>
+          <h3 class="text-2xl">Frameworks</h3>
+          <div class="flex w-full justify-evenly"></div>
+          <h3 class="text-2xl">DevOps</h3>
+          <div class="flex w-full justify-evenly"></div>
+        </div>
+        <h2 class="text-4xl">Experiences & Education</h2>
+        <div class="divider"></div> -->
+        <div>
+          <!-- Socials -->
+        </div>
       </div>
     </div>
   </section>
@@ -48,3 +101,7 @@ import Layout from "../layouts/Layout.astro";
     <h1 class="text-5xl text-center">My Projects</h1>
   </section>
 </Layout>
+<style>
+  .text-shadow {
+  }
+</style>
