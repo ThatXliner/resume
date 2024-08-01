@@ -1,4 +1,5 @@
 import daisyui from "daisyui";
+import typography from "@tailwindcss/typography";
 import * as icon from "@egoist/tailwindcss-icons";
 const { iconsPlugin, getIconCollections } = icon;
 /** @type {import('tailwindcss').Config} */
@@ -12,6 +13,7 @@ export default {
 		iconsPlugin({
 			collections: getIconCollections(["mdi"]),
 		}),
+		typography,
 	],
 	daisyui: { themes: ["light", "dark"] },
 };
