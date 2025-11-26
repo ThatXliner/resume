@@ -1,36 +1,99 @@
 ---
 import { Image } from "astro:assets";
-import { AnimatedThemeToggler } from "./ui/animated-theme-toggler";
 import { TextAnimate } from "./ui/text-animate";
 import { LightRays } from "./ui/light-rays";
 import me from "../assets/me_stand.png";
+import { Icon } from "astro-icon/components";
+import PerspectiveHoverCard from "./ui/hover-card";
+const icons = [
+    // "logos:github-icon",
+    "logos:git-icon",
+    // "logos:discord-icon",
+    // "skill-icons:atom",
+    // "vscode-icons:file-type-vscode",
+
+    // "logos:supabase-icon",
+    // "logos:vercel-icon",
+    // "logos:tauri",
+
+    "logos:nextjs-icon",
+    "logos:svelte-icon",
+    // "logos:vitejs",
+    // "logos:react",
+
+    // "simple-icons:arduino",
+    // "logos:raspberry-pi",
+    // "logos:astro-icon",
+    // "logos:css-3",
+    // "logos:sass",
+    // "logos:tailwindcss-icon",
+    // "logos:bootstrap",
+    // "logos:daisyui",
+    // "logos:html-5",
+    // "logos:javascript",
+    "logos:typescript-icon",
+    "logos:python",
+    // "logos:markdown",
+    // "skill-icons:sqlite",
+    // "skill-icons:regex-light",
+    // "logos:selenium",
+    "simple-icons:rust",
+    "logos:java",
+    "vscode-icons:file-type-cpp3",
+];
 ---
 
 <div class="h-screen w-full rounded-lg border">
     <div
         class="relative z-10 flex flex-col h-full w-full items-center justify-center gap-4 px-6 text-center"
     >
-        <!-- <span
-            class="text-xs font-semibold tracking-[0.35em] text-slate-800/60 uppercase dark:text-slate-200/60"
-        >
-            Ambient glow
-        </span> -->
+        <!-- TODO: animate this in -->
         <div class="flex space-x-3 space-y-3 items-center justify-center">
             <!-- <div class="flex flex-col items-center justify-center space-y-4"> -->
-            <h1 class="text-foreground text-4xl font-bold md:text-7xl">
-                Hi, I'm Bryan
-                <!-- TODO: add underline effect -->
-            </h1>
+            <div class="flex-col space-y-0">
+                <h1 class="text-foreground text-4xl font-bold md:text-7xl">
+                    Hi, I'm Bryan
+                    <!-- TODO: add underline effect -->
+                </h1>
+                <h1
+                    class="text-4xl md:text-7xl mb-5 font-bold text-white opacity-30 transform scale-y-[-1]
+                         mt-2 select-none
+                         mask-[linear-gradient(to_top,rgba(0,0,0,0.6),transparent)]"
+                >
+                    Hi, I'm Bryan
+                </h1>
+                <!-- TODO; menu or hover of brief experience description -->
+                <div
+                    class="flex justify-center items-center max-w-md flex-wrap text-base text-white mb-3"
+                >
+                    {
+                        icons.map((icon) => (
+                            <PerspectiveHoverCard client:only>
+                                <Icon
+                                    class="skill m-2"
+                                    name={icon}
+                                    size={50}
+                                    class="hover:drop-shadow-[0_0_5px_white]"
+                                />
+                            </PerspectiveHoverCard>
+                        ))
+                    }
+                </div>
+                <p class="text-slate-200/80">and much more...</p>
+            </div>
+
             <!-- </div> -->
             <Image
                 src={me}
+                draggable="false"
                 alt="A bird sitting on a nest of eggs."
+                class="ml-5 select-none"
                 width="300"
             />
         </div>
 
         <p
-            class="w-full text-9xl text-slate-800/80 md:text-base dark:text-slate-200/80"
+            class="w-full text-lg text-slate-800/80 md:text-2xl dark:text-slate-200/80"
         >
             <TextAnimate
                 animation="blurIn"
