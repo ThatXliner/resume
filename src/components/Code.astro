@@ -51,72 +51,65 @@ async function getRepositoryInformation(repo: string) {
     };
 }
 
-const reviews = [
-    await getRepositoryInformation("ThatXliner/billion"),
-    {
-        name: "react-ui-components",
-        body: "A comprehensive collection of reusable React UI components with TypeScript support.",
-        language: "TypeScript",
-        languageColor: "#3178c6",
-        starCount: 1247,
-        forkCount: 89,
-        isPublic: true,
-        updatedAt: "2024-01-15T10:30:00Z",
-    },
-    {
-        name: "data-visualization-lib",
-        body: "Modern data visualization library for creating interactive charts and graphs.",
-        language: "JavaScript",
-        languageColor: "#f1e05a",
-        starCount: 2156,
-        forkCount: 342,
-        isPublic: true,
-        updatedAt: "2024-01-14T16:45:00Z",
-    },
-    {
-        name: "api-gateway-service",
-        body: "Scalable microservices API gateway built with Node.js and Express.",
-        language: "JavaScript",
-        languageColor: "#f1e05a",
-        starCount: 834,
-        forkCount: 127,
-        isPublic: false,
-        updatedAt: "2024-01-13T09:20:00Z",
-    },
-    {
-        name: "ml-training-pipeline",
-        body: "Machine learning training pipeline with automated model deployment.",
-        language: "Python",
-        languageColor: "#3572A5",
-        starCount: 567,
-        forkCount: 78,
-        isPublic: true,
-        updatedAt: "2024-01-12T14:15:00Z",
-    },
-    {
-        name: "mobile-app-framework",
-        body: "Cross-platform mobile application framework for rapid development.",
-        language: "Dart",
-        languageColor: "#00B4AB",
-        starCount: 923,
-        forkCount: 156,
-        isPublic: true,
-        updatedAt: "2024-01-11T11:30:00Z",
-    },
-    {
-        name: "blockchain-explorer",
-        body: "Blockchain transaction explorer with real-time monitoring capabilities.",
-        language: "Rust",
-        languageColor: "#dea584",
-        starCount: 445,
-        forkCount: 67,
-        isPublic: true,
-        updatedAt: "2024-01-10T08:45:00Z",
-    },
-];
+async function getAllRepositories() {
+    const QUERY = `query {
+    viewer {
+      repositories(first: 100, ownerAffiliations: OWNER, orderBy: {field: UPDATED_AT, direction: DESC}) {
+        nodes {
+          name
+          description
+          url
+          homepageUrl
+          openGraphImageUrl
+          isPrivate
+          stargazerCount
+          forkCount
+          updatedAt
+          primaryLanguage {
+            name
+            color
+          }
+          languages(first: 5) {
+            nodes {
+              name
+            }
+          }
+        }
+      }
+    }
+  }`;
 
-const firstRow = reviews.slice(0, reviews.length / 2);
-const secondRow = reviews.slice(reviews.length / 2);
+    const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+        },
+        body: JSON.stringify({ query: QUERY }),
+    });
+
+    const json = await res.json();
+    console.log(json);
+
+    const repos = json.data.viewer.repositories.nodes;
+
+    return repos.map((repo: any) => ({
+        name: repo.name,
+        body: repo.description || "",
+        language: repo.primaryLanguage?.name,
+        languageColor: repo.primaryLanguage?.color,
+        starCount: repo.stargazerCount,
+        forkCount: repo.forkCount,
+        isPublic: !repo.isPrivate,
+        updatedAt: repo.updatedAt,
+    }));
+}
+
+const repositories = await getAllRepositories();
+
+const firstRow = repositories.slice(0, repositories.length / 2);
+const secondRow = repositories.slice(repositories.length / 2);
 ---
 
 <!-- <Font cssVariable="--font-inter" preload /> -->
@@ -124,10 +117,10 @@ const secondRow = reviews.slice(reviews.length / 2);
     <div
         class="relative flex w-full flex-col items-center justify-center overflow-hidden"
     >
-        <Marquee client:only pauseOnHover className="[--duration:20s]">
+        <Marquee client:only pauseOnHover className="[--duration:120s]">
             {firstRow.map((review) => <Repo client:only {...review} />)}
         </Marquee>
-        <Marquee client:only reverse pauseOnHover className="[--duration:20s]">
+        <Marquee client:only reverse pauseOnHover className="[--duration:120s]">
             {secondRow.map((review) => <Repo client:only {...review} />)}
         </Marquee>
         <div
