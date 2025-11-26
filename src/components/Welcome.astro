@@ -5,45 +5,27 @@ import { LightRays } from "./ui/light-rays";
 import me from "../assets/me_stand.png";
 import { Icon } from "astro-icon/components";
 import PerspectiveHoverCard from "./ui/hover-card";
+
 const icons = [
-    // "logos:github-icon",
     "logos:git-icon",
-    // "logos:discord-icon",
-    // "skill-icons:atom",
-    // "vscode-icons:file-type-vscode",
-
-    // "logos:supabase-icon",
-    // "logos:vercel-icon",
-    // "logos:tauri",
-
+    "logos:supabase-icon",
     "logos:nextjs-icon",
     "logos:svelte-icon",
-    // "logos:vitejs",
-    // "logos:react",
-
-    // "simple-icons:arduino",
-    // "logos:raspberry-pi",
-    // "logos:astro-icon",
-    // "logos:css-3",
-    // "logos:sass",
-    // "logos:tailwindcss-icon",
-    // "logos:bootstrap",
-    // "logos:daisyui",
-    // "logos:html-5",
-    // "logos:javascript",
+    "logos:react",
+    "simple-icons:arduino",
+    "logos:raspberry-pi",
+    "logos:javascript",
     "logos:typescript-icon",
     "logos:python",
-    // "logos:markdown",
-    // "skill-icons:sqlite",
-    // "skill-icons:regex-light",
-    // "logos:selenium",
+    "skill-icons:sqlite",
     "simple-icons:rust",
     "logos:java",
     "vscode-icons:file-type-cpp3",
 ];
 ---
 
-<div class="h-screen w-full rounded-lg border">
+<!-- <Font cssVariable="--font-inter" preload /> -->
+<div class="h-screen w-full rounded-lg">
     <div
         class="relative z-10 flex flex-col h-full w-full items-center justify-center gap-4 px-6 text-center"
     >
@@ -56,21 +38,20 @@ const icons = [
                     <!-- TODO: add underline effect -->
                 </h1>
                 <h1
-                    class="text-4xl md:text-7xl mb-5 font-bold text-white opacity-30 transform scale-y-[-1]
-                         mt-2 select-none
-                         mask-[linear-gradient(to_top,rgba(0,0,0,0.6),transparent)]"
+                    class="text-4xl md:text-7xl mb-5 font-bold text-white opacity-30 transform scale-y-[-1] mt-2 select-none mask-[linear-gradient(to_top,rgba(0,0,0,0.6),transparent)]"
                 >
                     Hi, I'm Bryan
                 </h1>
-                <!-- TODO; menu or hover of brief experience description -->
+
                 <div
-                    class="flex justify-center items-center max-w-md flex-wrap text-base text-white mb-3"
+                    class="flex justify-center items-center max-w-md flex-wrap text-base text-white p-3 glass-card rounded-box"
                 >
                     {
                         icons.map((icon) => (
+                            // (the margins between each icon is handled within PerspectiveHoverCard)
                             <PerspectiveHoverCard client:only>
                                 <Icon
-                                    class="skill m-2"
+                                    class="skill"
                                     name={icon}
                                     size={50}
                                     class="hover:drop-shadow-[0_0_5px_white]"
