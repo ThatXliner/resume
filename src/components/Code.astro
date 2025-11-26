@@ -6,16 +6,24 @@ async function getRepositoryInformation(repo: string) {
     const [owner, name] = repo.split("/");
     const QUERY = `query {
     repository(owner: "${owner}", name: "${name}") {
+      name
       description
       url
       homepageUrl
-	openGraphImageUrl
+      openGraphImageUrl
+      isPrivate
+      stargazerCount
+      forkCount
+      updatedAt
+      primaryLanguage {
+        name
+        color
+      }
       languages(first: 5) {
         nodes {
           name
         }
       }
-
     }
   }`;
     const res = await fetch("https://api.github.com/graphql", {
@@ -28,18 +36,23 @@ async function getRepositoryInformation(repo: string) {
         body: JSON.stringify({ query: QUERY }),
     });
     const json = await res.json();
-    const data: {
-        repository: {
-            description: string;
-            url: string;
-            homepageUrl: string;
-            openGraphImageUrl: string;
-        };
-    } = json.data;
-    return data;
+    console.log(json);
+    const repository = json.data.repository;
+
+    return {
+        name: repository.name,
+        body: repository.description || "",
+        language: repository.primaryLanguage?.name,
+        languageColor: repository.primaryLanguage?.color,
+        starCount: repository.stargazerCount,
+        forkCount: repository.forkCount,
+        isPublic: !repository.isPrivate,
+        updatedAt: repository.updatedAt,
+    };
 }
 
 const reviews = [
+    await getRepositoryInformation("ThatXliner/billion"),
     {
         name: "react-ui-components",
         body: "A comprehensive collection of reusable React UI components with TypeScript support.",
