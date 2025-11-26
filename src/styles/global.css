@@ -57,7 +57,11 @@
     transform: translateY(calc(-100% - var(--gap)));
         }
     }
-}
+  --animate-gradient: gradient 8s linear infinite
+;
+  @keyframes gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;}}}
 
 :root {
     --radius: 0.625rem;

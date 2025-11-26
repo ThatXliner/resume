@@ -143,7 +143,7 @@ async function getAllRepositories() {
             await fs.writeFile(
                 cachePath,
                 JSON.stringify({ timestamp: Date.now(), data }, null, 2),
-                "utf-8"
+                "utf-8",
             );
             console.log("Repository data cached");
         } catch (error) {
@@ -163,16 +163,19 @@ const secondRow = repositories.slice(repositories.length / 2);
 <!-- <Font cssVariable="--font-inter" preload /> -->
 <div class="h-screen w-full">
     <h1 id="code" class="text-6xl font-bold text-center my-4 mb-16">My Code</h1>
-    <p
-        class="w-md text-lg text-slate-800/80 md:text-2xl dark:text-slate-200/80"
-    >
-        <TextAnimate
-            animation="blurIn"
-            as="h1"
-            client:only
-            text={"Here is a look into my code for my many years of programming"}
-        />
-    </p>p
+    <div class="flex w-full justify-center">
+        <p
+            class="w-full text-center text-lg text-slate-800/80 md:text-xl dark:text-slate-200/80 italic"
+        >
+            <TextAnimate
+                animation="blurIn"
+                as="h3"
+                client:only
+                text={"Source Repositories: projects I've started myself"}
+            />
+        </p>
+    </div>
+
     <div
         class="relative flex w-full flex-col items-center justify-center overflow-hidden"
     >

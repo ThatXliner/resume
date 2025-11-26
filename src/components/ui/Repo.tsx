@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { Icon } from "@iconify/react";
+import { cn } from "@/lib/utils";
 
 export default function Repo({
   name,
@@ -26,13 +27,13 @@ export default function Repo({
   return (
     <a href={`https://github.com/ThatXliner/${name}`}>
       <div
-        className={
-          "relative w-80 cursor-pointer overflow-hidden rounded-lg border p-4 transition-colors" +
+        className={cn(
+          "relative w-80 cursor-pointer overflow-hidden rounded-lg border p-4 transition-colors",
           // light styles
-          " border-gray-300 bg-white hover:bg-gray-50" +
+          " border-gray-300 bg-white hover:bg-gray-50",
           // dark styles
-          " dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-750"
-        }
+          " dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-750",
+        )}
       >
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
