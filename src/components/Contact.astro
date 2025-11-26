@@ -1,0 +1,14 @@
+---
+import ContactBar from "./ui/contact-bar";
+---
+
+<div class="h-screen flex flex-col items-center justify-center">
+    <span
+        class="pointer-events-none
+bg-linear-to-b from-purple-400 to-amber-500/80 bg-clip-text text-center text-8xl
+leading-none font-semibold whitespace-pre-wrap text-transparent"
+    >
+        Contact Me
+    </span>
+    <ContactBar client:only />
+</div>

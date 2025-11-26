@@ -1,0 +1,88 @@
+---
+import { Image } from "astro:assets";
+import { TextAnimate } from "./ui/text-animate";
+import { LightRays } from "./ui/light-rays";
+import me from "../assets/me_stand.png";
+import { Icon } from "astro-icon/components";
+import PerspectiveHoverCard from "./ui/hover-card";
+
+const icons = [
+    "logos:git-icon",
+    "logos:supabase-icon",
+    "logos:nextjs-icon",
+    "logos:svelte-icon",
+    "logos:react",
+    "simple-icons:arduino",
+    "logos:raspberry-pi",
+    "logos:javascript",
+    "logos:typescript-icon",
+    "logos:python",
+    "skill-icons:sqlite",
+    "simple-icons:rust",
+    "logos:java",
+    "vscode-icons:file-type-cpp3",
+];
+---
+
+<!-- <Font cssVariable="--font-inter" preload /> -->
+<div class="h-full w-full rounded-lg">
+    <div
+        class="relative z-10 flex flex-col h-full w-full items-center justify-center gap-4 px-6 text-center"
+    >
+        <!-- TODO: animate this in -->
+        <div class="flex space-x-3 space-y-3 items-center justify-center">
+            <!-- <div class="flex flex-col items-center justify-center space-y-4"> -->
+            <div class="flex-col space-y-0">
+                <h1 class="text-foreground text-4xl font-bold md:text-7xl">
+                    Hi, I'm Bryan
+                    <!-- TODO: add underline effect -->
+                </h1>
+                <h1
+                    class="text-4xl md:text-7xl mb-5 font-bold text-white opacity-30 transform scale-y-[-1] mt-2 select-none mask-[linear-gradient(to_top,rgba(0,0,0,0.6),transparent)]"
+                >
+                    Hi, I'm Bryan
+                </h1>
+
+                <div
+                    class="flex justify-center items-center max-w-md flex-wrap text-base text-white p-3 glass-card rounded-box"
+                >
+                    {
+                        icons.map((icon) => (
+                            // (the margins between each icon is handled within PerspectiveHoverCard)
+                            <PerspectiveHoverCard client:only>
+                                <Icon
+                                    class="skill"
+                                    name={icon}
+                                    size={50}
+                                    class="hover-glow"
+                                />
+                            </PerspectiveHoverCard>
+                        ))
+                    }
+                </div>
+                <p class="text-slate-200/80">and much more...</p>
+            </div>
+
+            <!-- </div> -->
+            <Image
+                src={me}
+                draggable="false"
+                alt="A bird sitting on a nest of eggs."
+                class="ml-5 select-none"
+                width="300"
+            />
+        </div>
+
+        <p
+            class="w-full text-lg text-slate-800/80 md:text-2xl dark:text-slate-200/80"
+        >
+            <TextAnimate
+                animation="blurIn"
+                as="h1"
+                client:only
+                text={"I'm a full-stack developer, freelance photographer, camera operator, musician, and passionate creator."}
+            />
+        </p>
+    </div>
+    <LightRays />
+</div>
