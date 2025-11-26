@@ -4,54 +4,6 @@ import { Marquee } from "./ui/marquee";
 import { Icon } from "astro-icon/components";
 import Repo from "./ui/Repo";
 import { TextAnimate } from "./ui/text-animate";
-async function getRepositoryInformation(repo: string) {
-    const [owner, name] = repo.split("/");
-    const QUERY = `query {
-    repository(owner: "${owner}", name: "${name}") {
-      name
-      description
-      url
-      homepageUrl
-      openGraphImageUrl
-      isPrivate
-      stargazerCount
-      forkCount
-      updatedAt
-      primaryLanguage {
-        name
-        color
-      }
-      languages(first: 5) {
-        nodes {
-          name
-        }
-      }
-    }
-  }`;
-    const res = await fetch("https://api.github.com/graphql", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
-        },
-        body: JSON.stringify({ query: QUERY }),
-    });
-    const json = await res.json();
-    console.log(json);
-    const repository = json.data.repository;
-
-    return {
-        name: repository.name,
-        body: repository.description || "",
-        language: repository.primaryLanguage?.name,
-        languageColor: repository.primaryLanguage?.color,
-        starCount: repository.stargazerCount,
-        forkCount: repository.forkCount,
-        isPublic: !repository.isPrivate,
-        updatedAt: repository.updatedAt,
-    };
-}
 
 async function getAllRepositories() {
     const isDev = import.meta.env.DEV;
@@ -110,7 +62,7 @@ async function getAllRepositories() {
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+            Authorization: `Bearer ${import.meta.env.ASTRO_GITHUB_TOKEN}`,
         },
         body: JSON.stringify({ query: QUERY }),
     });
@@ -211,7 +163,7 @@ async function getForkedRepositories() {
         headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+            Authorization: `Bearer ${import.meta.env.ASTRO_GITHUB_TOKEN}`,
         },
         body: JSON.stringify({ query: QUERY }),
     });
