@@ -8,6 +8,9 @@ import { TextAnimate } from "./ui/text-animate";
 async function getAllRepositories() {
     const isDev = import.meta.env.DEV;
     const cacheFile = ".cache/repositories.json";
+    if (!import.meta.env.ASTRO_GITHUB_TOKEN) {
+        throw new Error("ASTRO_GITHUB_TOKEN is not set");
+    }
 
     // Try to read from cache in development
     if (isDev) {
@@ -110,7 +113,9 @@ async function getAllRepositories() {
 async function getForkedRepositories() {
     const isDev = import.meta.env.DEV;
     const cacheFile = ".cache/forks.json";
-
+    if (!import.meta.env.ASTRO_GITHUB_TOKEN) {
+        throw new Error("ASTRO_GITHUB_TOKEN is not set");
+    }
     // Try to read from cache in development
     if (isDev) {
         try {
