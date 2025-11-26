@@ -1,0 +1,130 @@
+---
+import { LightRays } from "./ui/light-rays";
+import { Marquee } from "./ui/marquee";
+import Repo from "./ui/Repo";
+async function getRepositoryInformation(repo: string) {
+    const [owner, name] = repo.split("/");
+    const QUERY = `query {
+    repository(owner: "${owner}", name: "${name}") {
+      description
+      url
+      homepageUrl
+	openGraphImageUrl
+      languages(first: 5) {
+        nodes {
+          name
+        }
+      }
+
+    }
+  }`;
+    const res = await fetch("https://api.github.com/graphql", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${import.meta.env.GITHUB_TOKEN}`,
+        },
+        body: JSON.stringify({ query: QUERY }),
+    });
+    const json = await res.json();
+    const data: {
+        repository: {
+            description: string;
+            url: string;
+            homepageUrl: string;
+            openGraphImageUrl: string;
+        };
+    } = json.data;
+    return data;
+}
+
+const reviews = [
+    {
+        name: "react-ui-components",
+        body: "A comprehensive collection of reusable React UI components with TypeScript support.",
+        language: "TypeScript",
+        languageColor: "#3178c6",
+        starCount: 1247,
+        forkCount: 89,
+        isPublic: true,
+        updatedAt: "2024-01-15T10:30:00Z",
+    },
+    {
+        name: "data-visualization-lib",
+        body: "Modern data visualization library for creating interactive charts and graphs.",
+        language: "JavaScript",
+        languageColor: "#f1e05a",
+        starCount: 2156,
+        forkCount: 342,
+        isPublic: true,
+        updatedAt: "2024-01-14T16:45:00Z",
+    },
+    {
+        name: "api-gateway-service",
+        body: "Scalable microservices API gateway built with Node.js and Express.",
+        language: "JavaScript",
+        languageColor: "#f1e05a",
+        starCount: 834,
+        forkCount: 127,
+        isPublic: false,
+        updatedAt: "2024-01-13T09:20:00Z",
+    },
+    {
+        name: "ml-training-pipeline",
+        body: "Machine learning training pipeline with automated model deployment.",
+        language: "Python",
+        languageColor: "#3572A5",
+        starCount: 567,
+        forkCount: 78,
+        isPublic: true,
+        updatedAt: "2024-01-12T14:15:00Z",
+    },
+    {
+        name: "mobile-app-framework",
+        body: "Cross-platform mobile application framework for rapid development.",
+        language: "Dart",
+        languageColor: "#00B4AB",
+        starCount: 923,
+        forkCount: 156,
+        isPublic: true,
+        updatedAt: "2024-01-11T11:30:00Z",
+    },
+    {
+        name: "blockchain-explorer",
+        body: "Blockchain transaction explorer with real-time monitoring capabilities.",
+        language: "Rust",
+        languageColor: "#dea584",
+        starCount: 445,
+        forkCount: 67,
+        isPublic: true,
+        updatedAt: "2024-01-10T08:45:00Z",
+    },
+];
+
+const firstRow = reviews.slice(0, reviews.length / 2);
+const secondRow = reviews.slice(reviews.length / 2);
+---
+
+<!-- <Font cssVariable="--font-inter" preload /> -->
+<div class="h-screen w-full rounded-lg">
+    <div
+        class="relative flex w-full flex-col items-center justify-center overflow-hidden"
+    >
+        <Marquee client:only pauseOnHover className="[--duration:20s]">
+            {firstRow.map((review) => <Repo client:only {...review} />)}
+        </Marquee>
+        <Marquee client:only reverse pauseOnHover className="[--duration:20s]">
+            {secondRow.map((review) => <Repo client:only {...review} />)}
+        </Marquee>
+        <div
+            class="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r"
+        >
+        </div>
+        <div
+            class="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l"
+        >
+        </div>
+    </div>
+    <LightRays />
+</div>
