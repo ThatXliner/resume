@@ -2,6 +2,7 @@
 import { LightRays } from "./ui/light-rays";
 import { Marquee } from "./ui/marquee";
 import Repo from "./ui/Repo";
+import { TextAnimate } from "./ui/text-animate";
 async function getRepositoryInformation(repo: string) {
     const [owner, name] = repo.split("/");
     const QUERY = `query {
@@ -52,9 +53,33 @@ async function getRepositoryInformation(repo: string) {
 }
 
 async function getAllRepositories() {
+    const isDev = import.meta.env.DEV;
+    const cacheFile = ".cache/repositories.json";
+
+    // Try to read from cache in development
+    if (isDev) {
+        try {
+            const fs = await import("fs/promises");
+            const path = await import("path");
+            const cachePath = path.resolve(cacheFile);
+            const cacheData = await fs.readFile(cachePath, "utf-8");
+            const cached = JSON.parse(cacheData);
+
+            // Cache for 1 hour
+            const cacheAge = Date.now() - cached.timestamp;
+            if (cacheAge < 60 * 60 * 1000) {
+                console.log("Using cached repository data");
+                return cached.data;
+            }
+        } catch (error) {
+            // Cache doesn't exist or is invalid, continue to fetch
+            console.log("No valid cache found, fetching from GitHub...");
+        }
+    }
+
     const QUERY = `query {
     viewer {
-      repositories(first: 100, ownerAffiliations: OWNER, isFork: false, orderBy: {field: UPDATED_AT, direction: DESC}) {
+      repositories(first: 100, ownerAffiliations: OWNER, isFork: false, isArchived: false, orderBy: {field: UPDATED_AT, direction: DESC}) {
         nodes {
           name
           description
@@ -90,11 +115,10 @@ async function getAllRepositories() {
     });
 
     const json = await res.json();
-    console.log(json);
 
     const repos = json.data.viewer.repositories.nodes;
 
-    return repos
+    const data = repos
         .filter((repo: any) => repo.stargazerCount >= 1)
         .map((repo: any) => ({
             name: repo.name,
@@ -106,6 +130,28 @@ async function getAllRepositories() {
             isPublic: !repo.isPrivate,
             updatedAt: repo.updatedAt,
         }));
+
+    // Save to cache in development
+    if (isDev) {
+        try {
+            const fs = await import("fs/promises");
+            const path = await import("path");
+            const cachePath = path.resolve(cacheFile);
+            const cacheDir = path.dirname(cachePath);
+
+            await fs.mkdir(cacheDir, { recursive: true });
+            await fs.writeFile(
+                cachePath,
+                JSON.stringify({ timestamp: Date.now(), data }, null, 2),
+                "utf-8"
+            );
+            console.log("Repository data cached");
+        } catch (error) {
+            console.error("Failed to write cache:", error);
+        }
+    }
+
+    return data;
 }
 
 const repositories = await getAllRepositories();
@@ -115,14 +161,25 @@ const secondRow = repositories.slice(repositories.length / 2);
 ---
 
 <!-- <Font cssVariable="--font-inter" preload /> -->
-<div class="h-screen w-full rounded-lg">
+<div class="h-screen w-full">
+    <h1 id="code" class="text-6xl font-bold text-center my-4 mb-16">My Code</h1>
+    <p
+        class="w-md text-lg text-slate-800/80 md:text-2xl dark:text-slate-200/80"
+    >
+        <TextAnimate
+            animation="blurIn"
+            as="h1"
+            client:only
+            text={"Here is a look into my code for my many years of programming"}
+        />
+    </p>p
     <div
         class="relative flex w-full flex-col items-center justify-center overflow-hidden"
     >
-        <Marquee client:only pauseOnHover className="[--duration:120s]">
+        <Marquee client:only pauseOnHover className="[--duration:90s]">
             {firstRow.map((review) => <Repo client:only {...review} />)}
         </Marquee>
-        <Marquee client:only reverse pauseOnHover className="[--duration:120s]">
+        <Marquee client:only reverse pauseOnHover className="[--duration:90s]">
             {secondRow.map((review) => <Repo client:only {...review} />)}
         </Marquee>
         <div
