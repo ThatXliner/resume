@@ -94,16 +94,18 @@ async function getAllRepositories() {
 
     const repos = json.data.viewer.repositories.nodes;
 
-    return repos.map((repo: any) => ({
-        name: repo.name,
-        body: repo.description || "",
-        language: repo.primaryLanguage?.name,
-        languageColor: repo.primaryLanguage?.color,
-        starCount: repo.stargazerCount,
-        forkCount: repo.forkCount,
-        isPublic: !repo.isPrivate,
-        updatedAt: repo.updatedAt,
-    }));
+    return repos
+        .filter((repo: any) => repo.stargazerCount >= 1)
+        .map((repo: any) => ({
+            name: repo.name,
+            body: repo.description || "",
+            language: repo.primaryLanguage?.name,
+            languageColor: repo.primaryLanguage?.color,
+            starCount: repo.stargazerCount,
+            forkCount: repo.forkCount,
+            isPublic: !repo.isPrivate,
+            updatedAt: repo.updatedAt,
+        }));
 }
 
 const repositories = await getAllRepositories();
