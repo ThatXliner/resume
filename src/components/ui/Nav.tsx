@@ -9,16 +9,16 @@ export default function Nav() {
         Code
       </a>
       <a
-        href="camera"
-        className="transition-all duration-300 px-10 hover:underline hover:text-white hover:drop-shadow-[0_0_120px_rgba(255,255,255,0.6)]"
-      >
-        Camera
-      </a>
-      <a
-        href="#create"
+        href="craft"
         className="transition-all duration-300 px-10 hover:underline hover:text-white hover:drop-shadow-[0_0_120px_rgba(255,255,255,0.6)]"
       >
         Craft
+      </a>
+      <a
+        href="#contact"
+        className="transition-all duration-300 px-10 hover:underline hover:text-white hover:drop-shadow-[0_0_120px_rgba(255,255,255,0.6)]"
+      >
+        Contact
       </a>
     </nav>
   );

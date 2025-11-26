@@ -41,27 +41,29 @@
     --color-sidebar-ring: var(--sidebar-ring);
     --animate-marquee: marquee var(--duration) infinite linear;
     --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
-  @keyframes marquee {
-  from {
-    transform: translateX(0);
+    @keyframes marquee {
+        from {
+            transform: translateX(0);
         }
-  to {
-    transform: translateX(calc(-100% - var(--gap)));
-        }
-    }
-  @keyframes marquee-vertical {
-  from {
-    transform: translateY(0);
-        }
-  to {
-    transform: translateY(calc(-100% - var(--gap)));
+        to {
+            transform: translateX(calc(-100% - var(--gap)));
         }
     }
-  --animate-gradient: gradient 8s linear infinite
-;
-  @keyframes gradient {
-  to {
-    background-position: var(--bg-size, 300%) 0;}}}
+    @keyframes marquee-vertical {
+        from {
+            transform: translateY(0);
+        }
+        to {
+            transform: translateY(calc(-100% - var(--gap)));
+        }
+    }
+    --animate-gradient: gradient 8s linear infinite;
+    @keyframes gradient {
+        to {
+            background-position: var(--bg-size, 300%) 0;
+        }
+    }
+}
 
 :root {
     --radius: 0.625rem;
@@ -157,4 +159,17 @@
 }
 .inter-thin {
     font-family: "Inter-Thin", sans-serif;
+}
+.hover-glow:hover {
+    @media (hover: hover) {
+        --tw-drop-shadow-size: drop-shadow(
+            0 0 5px var(--tw-drop-shadow-color, white)
+        );
+        --tw-drop-shadow: var(--tw-drop-shadow-size);
+        filter: var(--tw-blur,) var(--tw-brightness,) var(--tw-contrast,)
+            var(--tw-grayscale,) var(--tw-hue-rotate,) var(--tw-invert,)
+            var(--tw-saturate,) var(--tw-sepia,) var(--tw-drop-shadow,);
+    }
+    transition-duration: 0.2s;
+    transition-property: filter;
 }
