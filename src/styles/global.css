@@ -365,7 +365,7 @@
 }
 
 .rise {
-    animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* ── Masked line reveal ───────────────────────────────────────────────────
@@ -416,7 +416,7 @@
 }
 .split-char {
     display: inline-block;
-    animation: char-up 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: char-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: var(--char-delay, 0ms);
 
     /* Each letter hides behind its own edge, not the line's. On a narrow

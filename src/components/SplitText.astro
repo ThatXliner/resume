@@ -19,7 +19,7 @@ interface Props {
     stagger?: number;
 }
 
-const { text, class: className, start = 0, stagger = 18 } = Astro.props;
+const { text, class: className, start = 0, stagger = 10 } = Astro.props;
 
 /* Spaces consume a slot too, so the stagger tracks horizontal position across
    the line rather than drifting ahead of it. */

@@ -43,14 +43,14 @@ import SplitText from "./SplitText.astro";
 
         <p
             class="t-lede rise mt-7 w-full max-w-[52ch] text-balance"
-            style="animation-delay:360ms"
+            style="animation-delay:160ms"
         >
             I'm Bryan Hu, founder of Billion and Quillium. Programmer, photographer, and pianist.
         </p>
 
         <div
             class="rise mt-9 flex w-full flex-wrap items-center justify-center gap-x-7 gap-y-4"
-            style="animation-delay:470ms"
+            style="animation-delay:240ms"
         >
             <a href="#building" class="btn">See what I'm building</a>
             <a href="/thelist" class="btn btn-rainbow">Check out The List</a>
@@ -64,12 +64,14 @@ import SplitText from "./SplitText.astro";
         <div
             class="lag pointer-events-none relative mt-auto w-full max-w-[17rem] pt-14 sm:max-w-[19rem]"
         >
-            <div class="rise" style="animation-delay:150ms">
+            <div class="rise" style="animation-delay:80ms">
                 <Image
                     src={me}
                     alt="Bryan Hu"
                     width={420}
                     densities={[1, 2]}
+                    loading="eager"
+                    fetchpriority="high"
                     draggable="false"
                     class="falloff h-auto w-full translate-y-px select-none brightness-[1.05]"
                 />
