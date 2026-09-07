@@ -28,8 +28,8 @@ const { src, alt, class: className } = Astro.props;
         <Image
             src={src}
             alt={alt}
-            width={560}
-            densities={[1, 2]}
+            widths={[280, 400, 560]}
+            sizes="(min-width: 640px) 19.5rem, calc((100vw - 4rem) / 2)"
             draggable="false"
             class="block h-auto w-full select-none"
         />

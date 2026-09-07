@@ -5,14 +5,14 @@ import Nav from "@/components/Nav.astro";
 import Footer from "@/components/Footer.astro";
 import { photographs } from "@/data/photography";
 
-const viewerBreakpoints = [1280, 1920, 2560, 3200, 3840, 4800];
+const viewerBreakpoints = [1280, 1920, 2560, 3840];
 const galleryPhotos = await Promise.all(
     photographs.map(async (photo) => {
         const widths = [
             ...viewerBreakpoints.filter((width) => width < photo.image.width),
             photo.image.width,
         ];
-        const [avif, webp, jpeg] = await Promise.all([
+        const [avif, webp] = await Promise.all([
             getImage({
                 src: photo.image,
                 widths,
@@ -27,22 +27,14 @@ const galleryPhotos = await Promise.all(
                 format: "webp",
                 quality: "high",
             }),
-            getImage({
-                src: photo.image,
-                widths,
-                sizes: "100vw",
-                format: "jpeg",
-                quality: "high",
-            }),
         ]);
 
         return {
             ...photo,
             viewerAvifSrcset: avif.srcSet.attribute,
             viewerWebpSrcset: webp.srcSet.attribute,
-            viewerJpegSrcset: jpeg.srcSet.attribute,
             viewerFallback:
-                jpeg.srcSet.values.at(-1)?.url ?? jpeg.src,
+                webp.srcSet.values.at(-1)?.url ?? webp.src,
         };
     }),
 );
@@ -130,7 +122,6 @@ const galleryPhotos = await Promise.all(
                             class="photo-open group block w-full cursor-zoom-in overflow-hidden bg-surface text-left"
                             data-viewer-avif-srcset={photo.viewerAvifSrcset}
                             data-viewer-webp-srcset={photo.viewerWebpSrcset}
-                            data-viewer-jpeg-srcset={photo.viewerJpegSrcset}
                             data-viewer-fallback={photo.viewerFallback}
                             data-alt={photo.alt}
                             data-title={photo.title}
@@ -143,9 +134,9 @@ const galleryPhotos = await Promise.all(
                             <Picture
                                 src={photo.image}
                                 alt={photo.alt}
-                                formats={["avif", "webp"]}
-                                fallbackFormat="jpeg"
-                                widths={[480, 800, 1200, 1600]}
+                                formats={["avif"]}
+                                fallbackFormat="webp"
+                                widths={[480, 800, 1200]}
                                 sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
                                 quality="high"
                                 loading="lazy"

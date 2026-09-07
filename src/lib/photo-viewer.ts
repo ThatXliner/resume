@@ -27,8 +27,8 @@ export function setupPhotoViewer(dialogSelector: string, triggerSelector: string
             title.textContent = button.dataset.title ?? "";
             viewer.showModal();
 
-            // Keep picture selection native: AVIF, WebP, then responsive JPEG.
-            // Art's original source remains its full-resolution fallback.
+            // Keep picture selection native: AVIF, then WebP as the fallback.
+            // Art's original source remains its full-resolution WebP fallback.
             const picture = document.createElement("picture");
             for (const [type, srcset] of [
                 ["image/avif", button.dataset.viewerAvifSrcset],
@@ -47,7 +47,6 @@ export function setupPhotoViewer(dialogSelector: string, triggerSelector: string
             picture.append(image);
             frame.append(picture);
             image.sizes = "100vw";
-            if (button.dataset.viewerJpegSrcset) image.srcset = button.dataset.viewerJpegSrcset;
             image.src = button.dataset.viewerFallback ?? button.dataset.src ?? thumbnail.src;
 
             try {

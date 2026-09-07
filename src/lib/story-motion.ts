@@ -11,7 +11,8 @@ export function initStoryMotion() {
     let length = 0;
     let samples: { y: number; length: number }[] = [];
     let current = -1;
-    let frame = 0;
+    let measureFrame = 0;
+    let renderFrame = 0;
     let top = 0;
     let anchors: number[] = [];
     const clamp = (n: number) => Math.max(0, Math.min(1, n));
@@ -48,20 +49,27 @@ export function initStoryMotion() {
         ink.style.strokeDasharray = `${length}`;
         // A monotonic envelope completes each loop without jumping backward.
         let maxY = 0;
-        samples = Array.from({ length: Math.ceil(length / 3) + 1 }, (_, i) => {
-            const at = Math.min(i * 3, length);
+        samples = Array.from({ length: Math.ceil(length / 12) + 1 }, (_, i) => {
+            const at = Math.min(i * 12, length);
             maxY = Math.max(maxY, ink.getPointAtLength(at).y);
             return { y: maxY, length: at };
         });
         samples.push({ y: journey!.offsetHeight, length });
         current = -1;
         journey!.classList.add('motion-ready');
-        schedule();
+        scheduleRender();
     }
     function render() {
-        frame = 0;
+        renderFrame = 0;
         const readY = window.scrollY + window.innerHeight * .64 - top;
-        const target = staticMode() ? length : readY < 0 ? 0 : (samples.find(p => p.y >= readY)?.length ?? length);
+        let low = 0;
+        let high = samples.length;
+        while (low < high) {
+            const middle = (low + high) >> 1;
+            if (samples[middle].y >= readY) high = middle;
+            else low = middle + 1;
+        }
+        const target = staticMode() ? length : readY < 0 ? 0 : (samples[low]?.length ?? length);
         if (current < 0 || staticMode()) current = target;
         current += (target - current) * .16;
         if (Math.abs(target - current) < .2) current = target;
@@ -74,17 +82,38 @@ export function initStoryMotion() {
             chapter.style.setProperty('--chapter-progress', `${progress}`);
             chapter.classList.toggle('is-written', progress > .45);
         });
-        if (current !== target) frame = requestAnimationFrame(render);
+        if (current !== target) scheduleRender();
     }
-    function schedule() {
-        if (!frame) frame = requestAnimationFrame(render);
+    function scheduleRender() {
+        if (!renderFrame) renderFrame = requestAnimationFrame(render);
     }
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', measure, { passive: true });
-    reduced.addEventListener('change', schedule);
-    const observer = new ResizeObserver(measure);
-    observer.observe(journey);
-    observer.observe(document.body);
-    document.fonts.ready.then(measure);
-    measure();
+    function scheduleMeasure() {
+        if (!measureFrame) {
+            measureFrame = requestAnimationFrame(() => {
+                measureFrame = 0;
+                measure();
+            });
+        }
+    }
+    function start() {
+        window.addEventListener('scroll', scheduleRender, { passive: true });
+        window.addEventListener('resize', scheduleMeasure, { passive: true });
+        reduced.addEventListener('change', scheduleRender);
+        const resizeObserver = new ResizeObserver(scheduleMeasure);
+        resizeObserver.observe(journey);
+        document.fonts.ready.then(scheduleMeasure);
+        if (staticMode()) measure();
+        else scheduleMeasure();
+    }
+
+    if (staticMode()) {
+        start();
+    } else {
+        const observer = new IntersectionObserver(([entry]) => {
+            if (!entry.isIntersecting) return;
+            observer.disconnect();
+            start();
+        }, { rootMargin: '100% 0px' });
+        observer.observe(journey);
+    }
 }
