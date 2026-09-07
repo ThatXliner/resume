@@ -1,0 +1,717 @@
+---
+import { bodies, lenses } from "../lib/gear/catalog";
+---
+
+<section class="loadout" id="camera-loadout" aria-labelledby="loadout-heading">
+    <header class="loadout-header">
+        <div>
+            <p class="micro">Off the clock / Camera loadout</p><h3
+                id="loadout-heading"
+            >
+                In the bag.
+            </h3>
+        </div>
+        <span class="loadout-index" aria-hidden="true">SELECT / ASSEMBLE / EXPLORE</span>
+    </header>
+    <div class="kit-tabs" role="tablist" aria-label="Equipment ownership">
+        <button
+            id="kit-owned"
+            role="tab"
+            aria-selected="true"
+            aria-controls="gear-panel"
+            data-kit="owned">What I own</button
+        >
+        <button
+            id="kit-available"
+            role="tab"
+            aria-selected="false"
+            aria-controls="gear-panel"
+            tabindex="-1"
+            data-kit="available">What I can use</button
+        >
+    </div>
+    <div
+        id="gear-panel"
+        role="tabpanel"
+        aria-labelledby="kit-owned"
+        class="loadout-grid"
+    >
+        <div class="equipment-rail lens-rail" aria-label="Lens selector">
+            <div class="rail-heading">
+                <span class="micro">Lens</span><span
+                    class="micro"
+                    data-lens-count>01 / 04</span>
+            </div>
+            <div class="equipment-options" data-rail="lens">
+                {
+                    lenses.map((lens, i) => (
+                        <button
+                            class="equipment-card"
+                            data-lens={lens.id}
+                            data-owner={lens.kit}
+                            aria-pressed={i === 0 ? "true" : "false"}
+                            hidden={lens.kit !== "owned"}
+                        >
+                            <span
+                                class:list={[
+                                    "gear-thumb",
+                                    "lens-thumb",
+                                    { "white-lens": lens.white },
+                                ]}
+                                data-thumbnail={lens.id}
+                                aria-hidden="true"
+                            >
+                                <img src={`/models/gear/previews/${lens.id}.png`} alt="" width="320" height="220" loading="lazy" decoding="async" />
+                            </span>
+                            <>
+                                <span class="equipment-name">{lens.name}</span>
+                                <span class="equipment-detail">
+                                    {lens.detail}
+                                </span>
+                            </>
+                        </button>
+                    ))
+                }
+            </div>
+            <button
+                class="cycle-button"
+                data-cycle="lens"
+                aria-label="Select next lens"
+                ><span>Next lens</span><span aria-hidden="true">↓</span></button
+            >
+        </div>
+        <div class="setup-heading" aria-live="polite" aria-atomic="true">
+            <p class="micro" data-setup-context>
+                Current setup / My equipment
+            </p><h4 data-setup-name>EOS R7 <span>+</span> EF 28–135mm</h4>
+        </div>
+        <div class="model-stage">
+            <div class="stage-glow" aria-hidden="true"></div>
+            <div
+                class="model-canvas"
+                tabindex="0"
+                role="img"
+                aria-label="3D model of EOS R7 with EF 28–135mm. Drag to rotate, right-drag or Shift plus arrow keys to pan, arrow keys to orbit, plus or minus to zoom, Home to reset."
+            >
+                <img class="studio-poster" src="/models/gear/previews/setup.png" alt="" width="984" height="630" loading="lazy" decoding="async" />
+            </div>
+            <button class="start-3d" data-start-3d disabled>Explore in 3D</button>
+            <p class="viewer-status" role="status" hidden></p>
+            <span class="stage-corner top-left" aria-hidden="true"></span><span
+                class="stage-corner bottom-right"
+                aria-hidden="true"></span>
+            <span class="stage-caption micro">Explore the details</span>
+        </div>
+        <div class="equipment-rail body-rail" aria-label="Camera body selector">
+            <div class="rail-heading">
+                <span class="micro">Body</span><span
+                    class="micro"
+                    data-body-count>01 / 02</span>
+            </div>
+            <div class="equipment-options" data-rail="body">
+                {
+                    bodies.map((body, i) => (
+                        <button
+                            class="equipment-card"
+                            data-body={body.id}
+                            data-owner={body.kit}
+                            aria-pressed={i === 0 ? "true" : "false"}
+                            hidden={body.kit !== "owned"}
+                        >
+                            <span
+                                class="gear-thumb body-thumb"
+                                data-thumbnail={body.id}
+                                aria-hidden="true"
+                            >
+                                <img src={`/models/gear/previews/${body.id}.png`} alt="" width="320" height="220" loading="lazy" decoding="async" />
+                            </span>
+                            <>
+                                <span class="equipment-name">{body.name}</span>
+                                <span class="equipment-detail">
+                                    {body.type}
+                                </span>
+                            </>
+                        </button>
+                    ))
+                }
+            </div>
+            <button
+                class="cycle-button"
+                data-cycle="body"
+                aria-label="Select next camera body"
+                ><span>Next body</span><span aria-hidden="true">↓</span></button
+            >
+        </div>
+        <dl class="setup-specs">
+            <div>
+                <dt>Sensor</dt><dd data-spec="sensor">32.5 MP · APS-C</dd>
+            </div>
+            <div><dt>Focal length</dt><dd data-spec="range">28–135mm</dd></div>
+            <div>
+                <dt>Max aperture</dt><dd data-spec="aperture">f/3.5–5.6</dd>
+            </div>
+            <div><dt>Mount</dt><dd data-spec="mount">EF → RF · Control Ring</dd></div>
+        </dl>
+    </div>
+    <footer class="loadout-footer">
+        <span class="micro orbit-hint"
+            >↔ Drag to orbit <span>· Right-drag to pan · Pinch to zoom</span></span
+        ><button class="reset-view" aria-label="Reset 3D camera view"
+            ><span aria-hidden="true">↺</span> Reset view</button>
+    </footer>
+    <noscript
+        ><p class="no-script">
+            Enable JavaScript to explore the 3D equipment viewer. My bodies: EOS
+            R7 and EOS 40D. My lenses: EF 28–135mm IS USM, EF 70–200mm f/4L IS
+            USM, Tamron SP 35mm f/1.4, and EF 50mm f/1.8 II. Available to use:
+            C200 with an example 70–200mm f/2.8 setup.
+        </p><style>
+            .start-3d, .viewer-status {
+                display: none;
+            }
+        </style></noscript
+    >
+</section>
+<script>
+    import { initLoadout } from "../lib/gear/loadout";
+    const root = document.querySelector<HTMLElement>("#camera-loadout");
+    if (root) initLoadout(root);
+</script>
+<style>
+    .loadout {
+        --gear-accent: #eabc68;
+        --gear-muted: #92908b;
+        margin-top: 5rem;
+        scroll-margin-top: 6rem;
+        color: #e9e7e2;
+    }
+    .loadout-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin-bottom: 2rem;
+    }
+    .micro {
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        font-size: 0.64rem;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+        color: var(--gear-muted);
+    }
+    .loadout-header h3 {
+        font-size: clamp(2.6rem, 5.5vw, 4.6rem);
+        line-height: 1.1;
+        letter-spacing: -0.055em;
+        font-weight: 500;
+        margin-top: 0.7rem;
+    }
+    .loadout-index {
+        font:
+            0.62rem ui-monospace,
+            monospace;
+        letter-spacing: 0.15em;
+        color: #686762;
+        padding-bottom: 0.5rem;
+    }
+    .kit-tabs {
+        display: flex;
+        gap: 2rem;
+        border-bottom: 1px solid #ffffff24;
+    }
+    .kit-tabs button {
+        padding: 1rem 0.15rem;
+        font:
+            0.8rem ui-monospace,
+            monospace;
+        color: var(--gear-muted);
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+    }
+    .kit-tabs button[aria-selected="true"] {
+        color: var(--gear-accent);
+        border-color: var(--gear-accent);
+    }
+    .loadout-grid {
+        display: grid;
+        grid-template-columns: 170px minmax(0, 1fr) 170px;
+        grid-template-rows: auto minmax(340px, 420px) auto;
+        column-gap: 1.6rem;
+        padding-top: 2rem;
+    }
+    .equipment-rail {
+        min-width: 0;
+        grid-row: 1/4;
+        display: flex;
+        flex-direction: column;
+    }
+    .lens-rail {
+        grid-column: 1;
+    }
+    .body-rail {
+        grid-column: 3;
+    }
+    .rail-heading {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    .rail-heading .micro {
+        font-size: 0.6rem;
+    }
+    .equipment-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        max-height: 398px;
+        overflow: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: #716044 #ffffff08;
+        padding: 3px 7px 4px 3px;
+        margin: -3px -7px -4px -3px;
+    }
+    .equipment-card {
+        flex-shrink: 0;
+        width: 100%;
+        border: 1px solid #ffffff24;
+        border-radius: 9px;
+        background: linear-gradient(145deg, #ffffff04, #ffffff01);
+        padding: 0.7rem 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        cursor: pointer;
+        transition:
+            border-color 0.2s,
+            background 0.2s;
+    }
+    .equipment-card:hover {
+        border-color: #ffffff65;
+        background: #ffffff07;
+    }
+    .equipment-card[aria-pressed="true"] {
+        border-color: var(--gear-accent);
+        background: radial-gradient(
+            ellipse at 50% 20%,
+            #eabc680e,
+            transparent 90%
+        );
+    }
+    .equipment-card[aria-pressed="true"] .equipment-name {
+        color: var(--gear-accent);
+    }
+    .equipment-card[hidden] {
+        display: none;
+    }
+    .equipment-name {
+        font-size: 0.84rem;
+        letter-spacing: -0.015em;
+        line-height: 1.4;
+    }
+    .equipment-detail {
+        color: var(--gear-muted);
+        font:
+            0.58rem ui-monospace,
+            monospace;
+        margin-top: 0.3rem;
+        line-height: 1.4;
+    }
+    .gear-thumb {
+        display: grid;
+        place-items: center;
+        height: 109px;
+        width: 100%;
+        margin-bottom: 0.3rem;
+    }
+    .gear-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .lens-thumb > span {
+        width: 67px;
+        height: 55px;
+        background: repeating-linear-gradient(
+            90deg,
+            #202022 0 3px,
+            #343436 3px 4px
+        );
+        border-radius: 10px 18px 18px 10px;
+        transform: rotate(-22deg);
+        border-right: 7px solid #55555a;
+        box-shadow: -4px 3px 0 #141414;
+    }
+    .white-lens > span {
+        height: 45px;
+        width: 90px;
+        background: linear-gradient(
+            90deg,
+            #bdbbb1 0 20%,
+            #242426 20% 38%,
+            #bdbbb1 38% 65%,
+            #242426 65% 80%,
+            #bdbbb1 80%
+        );
+    }
+    .body-thumb > span {
+        width: 80px;
+        height: 56px;
+        border-radius: 12px 8px 7px 7px;
+        background: #262628;
+        position: relative;
+        box-shadow: 0 -8px 0 -3px #343437;
+    }
+    .body-thumb > span:after {
+        content: "";
+        position: absolute;
+        left: 28px;
+        top: 10px;
+        width: 37px;
+        height: 37px;
+        border: 5px solid #7a7a77;
+        border-radius: 50%;
+        background: #13131a;
+    }
+    .cycle-button {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--gear-muted);
+        font:
+            0.62rem ui-monospace,
+            monospace;
+        padding: 0.9rem 0.2rem;
+        cursor: pointer;
+    }
+    .cycle-button span:last-child {
+        font-size: 1.2rem;
+    }
+    .cycle-button:hover,
+    .reset-view:hover {
+        color: var(--gear-accent);
+    }
+    .cycle-button:disabled {
+        visibility: hidden;
+    }
+    .setup-heading {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: center;
+        align-self: center;
+        min-height: 65px;
+    }
+    .setup-heading .micro {
+        font-size: 0.55rem;
+        margin-bottom: 0.7rem;
+    }
+    .setup-heading h4 {
+        font-size: clamp(1rem, 1.8vw, 1.65rem);
+        font-weight: 450;
+        letter-spacing: -0.035em;
+        line-height: 1.3;
+    }
+    .setup-heading h4 span {
+        color: #6f6d67;
+        margin: 0 0.15rem;
+    }
+    .model-stage {
+        grid-column: 2;
+        grid-row: 2;
+        position: relative;
+        min-width: 0;
+    }
+    .stage-glow {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            ellipse at 50% 55%,
+            #ddd3b90b,
+            transparent 67%
+        );
+        pointer-events: none;
+    }
+    .model-canvas {
+        position: absolute;
+        inset: 0;
+        cursor: grab;
+        touch-action: pan-y;
+    }
+    .studio-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .start-3d {
+        position: absolute;
+        z-index: 2;
+        bottom: 2.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.7rem 1.1rem;
+        border: 1px solid #d9bc68;
+        border-radius: 4px;
+        color: #eed487;
+        background: #111e;
+        cursor: pointer;
+    }
+    .start-3d[hidden] { display: none; }
+    .start-3d:disabled { cursor: wait; }
+    [data-loading="true"] .studio-poster { opacity: 0.35; }
+    .model-canvas:active {
+        cursor: grabbing;
+    }
+    .model-canvas :global(canvas) {
+        display: block;
+        width: 100%;
+        height: 100%;
+        touch-action: pan-y !important;
+    }
+    .stage-caption {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        font-size: 0.48rem;
+        color: #6f6d67;
+        pointer-events: none;
+    }
+    .stage-corner {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        pointer-events: none;
+        opacity: 0.25;
+    }
+    .top-left {
+        top: 1rem;
+        left: 0;
+        border-top: 1px solid #a49c87;
+        border-left: 1px solid #a49c87;
+    }
+    .bottom-right {
+        bottom: 1rem;
+        right: 0;
+        border-bottom: 1px solid #a49c87;
+        border-right: 1px solid #a49c87;
+    }
+    .viewer-status {
+        position: absolute;
+        top: 45%;
+        left: 10%;
+        right: 10%;
+        text-align: center;
+        font:
+            0.75rem ui-monospace,
+            monospace;
+        color: var(--gear-muted);
+        pointer-events: none;
+    }
+    .viewer-status[hidden] {
+        display: none;
+    }
+    .setup-specs {
+        grid-column: 2;
+        grid-row: 3;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-block: 1px solid #ffffff24;
+        padding: 1rem 0;
+        margin-top: 0.3rem;
+    }
+    .setup-specs > div {
+        text-align: center;
+        padding: 0 0.6rem;
+        border-right: 1px solid #ffffff24;
+    }
+    .setup-specs > div:last-child {
+        border: 0;
+    }
+    .setup-specs dt {
+        font:
+            0.52rem ui-monospace,
+            monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--gear-muted);
+        margin-bottom: 0.6rem;
+    }
+    .setup-specs dd {
+        font-size: 0.74rem;
+        line-height: 1.45;
+    }
+    .loadout-footer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        min-height: 65px;
+        border-bottom: 1px solid #ffffff17;
+        margin-top: 0.4rem;
+    }
+    .orbit-hint {
+        font-size: 0.58rem;
+        text-transform: none;
+        letter-spacing: 0.04em;
+    }
+    .reset-view {
+        position: absolute;
+        right: 0;
+        font:
+            0.62rem ui-monospace,
+            monospace;
+        color: var(--gear-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .reset-view > span {
+        font-size: 1.2rem;
+    }
+    .no-script {
+        font-size: 0.85rem;
+        color: var(--gear-muted);
+        padding: 1rem 0;
+    }
+    @media (min-width: 1300px) {
+        .loadout-grid {
+            grid-template-columns: 190px minmax(0, 1fr) 190px;
+            column-gap: 2rem;
+        }
+    }
+    @media (max-width: 850px) {
+        .loadout-grid {
+            grid-template-columns: 125px minmax(0, 1fr) 125px;
+            column-gap: 0.8rem;
+            grid-template-rows: auto 310px auto;
+        }
+        .equipment-name {
+            font-size: 0.72rem;
+        }
+        .equipment-detail {
+            font-size: 0.51rem;
+        }
+        .gear-thumb {
+            height: 90px;
+        }
+        .setup-specs {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: 1rem;
+        }
+        .setup-specs > div:nth-child(2) {
+            border-right: 0;
+        }
+        .equipment-options {
+            max-height: 330px;
+        }
+        .loadout-index {
+            display: none;
+        }
+    }
+    @media (max-width: 600px) {
+        .loadout {
+            margin-top: 3.5rem;
+        }
+        .loadout-header {
+            margin-bottom: 1.3rem;
+        }
+        .loadout-header .micro {
+            font-size: 0.55rem;
+        }
+        .kit-tabs {
+            gap: 1.6rem;
+        }
+        .kit-tabs button {
+            font-size: 0.72rem;
+        }
+        .loadout-grid {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-rows: auto 300px auto auto;
+            gap: 1.4rem 1rem;
+            padding-top: 1.5rem;
+        }
+        .setup-heading {
+            grid-column: 1/-1;
+            grid-row: 1;
+            min-height: 0;
+        }
+        .setup-heading h4 {
+            font-size: 1.2rem;
+        }
+        .model-stage {
+            grid-column: 1/-1;
+            grid-row: 2;
+            margin: -1rem -0.6rem;
+        }
+        .setup-specs {
+            grid-column: 1/-1;
+            grid-row: 3;
+            margin: 0;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+        .setup-specs > div {
+            padding: 0 0.35rem;
+        }
+        .setup-specs > div:nth-child(2) {
+            border-right: 1px solid #ffffff24;
+        }
+        .setup-specs dt {
+            font-size: 0.46rem;
+        }
+        .setup-specs dd {
+            font-size: 0.64rem;
+        }
+        .equipment-rail {
+            grid-row: 4;
+        }
+        .lens-rail {
+            grid-column: 1;
+        }
+        .body-rail {
+            grid-column: 2;
+        }
+        .equipment-options {
+            max-height: 174px;
+            gap: 0.7rem;
+        }
+        .equipment-card {
+            padding: 0.5rem;
+        }
+        .gear-thumb {
+            height: 94px;
+        }
+        .equipment-name {
+            font-size: 0.77rem;
+        }
+        .equipment-detail {
+            font-size: 0.55rem;
+        }
+        .cycle-button {
+            padding: 0.65rem 0.2rem;
+        }
+        .rail-heading {
+            margin-bottom: 0.7rem;
+        }
+        .loadout-footer {
+            justify-content: space-between;
+            margin-top: 0;
+        }
+        .orbit-hint {
+            font-size: 0.52rem;
+        }
+        .orbit-hint span {
+            display: none;
+        }
+        .stage-caption {
+            bottom: 0.5rem;
+        }
+        .reset-view {
+            font-size: 0.58rem;
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .equipment-card {
+            transition: none;
+        }
+    }
+</style>

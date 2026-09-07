@@ -1,7 +1,6 @@
 ---
-import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
-import c200 from "../assets/c200-no-bg.png";
+import GearLoadout from "./GearLoadout.astro";
 
 const production = [
     {
@@ -19,15 +18,6 @@ const production = [
         detail: "Final Cut Pro · Logic Pro · Darktable",
         context: "Editing, grading, and music production",
     },
-];
-
-const gear = [
-    { name: "Canon EOS R7", kind: "Body" },
-    { name: "Canon EOS 40D", kind: "Body" },
-    { name: "EF 70–200mm f/4L IS USM", kind: "Telephoto" },
-    { name: "Tamron 35mm f/1.4 SP Di USD", kind: "Prime" },
-    { name: "EF 50mm f/1.8 II", kind: "Nifty fifty" },
-    { name: "EF-S 28–105mm STM", kind: "Kit" },
 ];
 
 // Years played is derived from the year each instrument started, so the
@@ -74,24 +64,7 @@ const [piano, trombone] = music;
 
     <!-- ══ Production ═══════════════════════════════════════════════════ -->
     <div class="mx-auto max-w-[1180px] px-gutter pt-16 md:pt-24">
-        <div class="grid items-center gap-12 md:grid-cols-2 md:gap-16">
-            <!-- A real object, lit. This is the warmth the section needs. -->
-            <div class="approach relative order-first md:order-last">
-                <div
-                    aria-hidden="true"
-                    class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_55%_at_50%_50%,rgba(255,255,255,0.09),transparent_72%)]"
-                >
-                </div>
-                <Image
-                    src={c200}
-                    alt="Canon C200 cinema camera"
-                    width={760}
-                    densities={[1, 2]}
-                    draggable="false"
-                    class="relative mx-auto h-auto w-full max-w-[30rem] select-none drop-shadow-[0_40px_60px_rgba(0,0,0,0.85)]"
-                />
-            </div>
-
+        <div class="max-w-3xl">
             <div>
                 <h3 class="t-headline reveal text-balance">
                     Behind the camera, and behind the switcher.
@@ -128,26 +101,7 @@ const [piano, trombone] = music;
             </div>
         </div>
 
-        <!-- Gear, as a plain list. It's a list of facts; it doesn't need cards. -->
-        <div class="mt-20 md:mt-28">
-            <h3 class="t-eyebrow reveal">In the bag</h3>
-            <ul
-                class="mt-6 grid gap-x-12 gap-y-0 sm:grid-cols-2 lg:grid-cols-3"
-            >
-                {
-                    gear.map((item) => (
-                        <li class="reveal flex items-baseline gap-4 border-t border-hairline py-3.5">
-                            <span class="text-[0.9375rem]">{item.name}</span>
-                            <span
-                                aria-hidden="true"
-                                class="mb-1 min-w-4 flex-1 border-b border-hairline"
-                            />
-                            <span class="t-caption shrink-0">{item.kind}</span>
-                        </li>
-                    ))
-                }
-            </ul>
-        </div>
+        <GearLoadout />
     </div>
 
     <!-- ══ Music ════════════════════════════════════════════════════════ -->
