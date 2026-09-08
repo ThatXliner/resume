@@ -100,7 +100,7 @@ export async function loadModelLibrary(initialIds: string[]) {
               )
                 material.normalScale.multiplyScalar(
                   /Pebbled rubber|Scanned grip rubber/.test(material.name)
-                    ? 0.8
+                    ? 0.35
                     : 0.6,
                 );
               if (
@@ -130,12 +130,20 @@ export async function loadModelLibrary(initialIds: string[]) {
                 // transmission pass. Front glass must not occlude those
                 // reflections in the depth buffer.
                 material.depthWrite = false;
-                material.opacity = inner ? 0.12 : 1;
-                material.metalness = inner ? 1 : 0;
+                material.opacity = inner && id !== "28-135" ? 0.12 : 1;
+                material.metalness = inner && id !== "28-135" ? 1 : 0;
                 material.roughness = 0.035;
                 if (inner) {
                   material.color.setRGB(0.75, 0.34, 0.12);
                   material.iridescence = 0.35;
+                  if (id === "28-135") {
+                    // Add only the dielectric coating reflection. Black removes
+                    // diffuse shading; the opaque optical chamber stays visible.
+                    material.color.setRGB(0, 0, 0);
+                    material.iridescence = 1;
+                    material.ior = 1.52;
+                    material.iridescenceThicknessRange = [280, 300];
+                  }
                   material.blending = THREE.AdditiveBlending;
                 } else material.color.setRGB(0.96, 0.98, 0.97);
                 object.castShadow = false;

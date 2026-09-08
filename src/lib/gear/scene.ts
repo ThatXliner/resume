@@ -46,7 +46,7 @@ export async function createStudio(
     [-3, 3, 5, 3, 4.5, 5],
     [4, 2, 2, 2, 4, 3],
     [0, 5, 0, 3, 3, 2],
-    [2, 1, -4, 2, 4, 3],
+    [-3, 3, -5, 3, 4.5, 5],
   ]) {
     const card = new THREE.Mesh(
       new THREE.PlaneGeometry(width, height),
@@ -88,8 +88,8 @@ export async function createStudio(
   const studioLights: THREE.SpotLight[] = [];
   for (const [color, intensity, x, y, z] of [
     ["#fff4e6", 35, -3, 4, 5],
-    ["#e4edff", 20, 4, 2, -3],
-    ["#ffffff", 8, 2, 1, 5],
+    ["#f4f6ff", 55, -3, 3, -5],
+    ["#ffffff", 25, 4, 3, 1],
   ] as const) {
     const light = new THREE.SpotLight(
       color,

@@ -47,6 +47,8 @@ async function run() {
                 }
                 if (material instanceof THREE.MeshPhysicalMaterial && material.transmission > 0) {
                     object.castShadow=false;
+                    // The tracer reads this flag from materials, not meshes.
+                    (material as THREE.MeshPhysicalMaterial & { castShadow: boolean }).castShadow=false;
                     material.clearcoat = 0;
                     material.color.setRGB(0.98, 0.99, 0.98);
                     material.roughness = 0.015;

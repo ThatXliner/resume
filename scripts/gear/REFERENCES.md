@@ -518,3 +518,234 @@ and 40D, with no browser errors; production build passed. Captures:
 /tmp/28-iris-front.png, /tmp/28-chamber-r7-angle.png,
 /tmp/28-chamber-40d-angle.png. The central optical reflections are still too plain
 and photorealism is not established.
+
+
+28–135 front optical profile: Canon Camera Museum construction diagram:
+https://global.canon/en/c-museum/product/ef342.html
+https://global.canon/ja/c-museum/wp-content/uploads/2015/05/ef342-lens-construction.gif
+The diagram shows an asymmetric curved front element, unlike the old symmetric
+biconvex mesh. optical_element now accepts independent rear curvature, defaults
+to its previous profile for other lenses, and rejects intersecting center faces.
+The 28–135 front uses a negative meniscus with .075 edge thickness, front sag .10,
+rear sag .135 (.040 center thickness). These are visual approximations from the
+diagram, not Canon's optical prescription. The front face position is preserved;
+the recess/chamber moves .035 back to clear the rear glass surface. The live
+viewer was inspected; the separate tracing study reached 453 samples in 82s at
+450x450. It still lacks convincing layered internal reflections. Do not ship
+path tracing as a presumed solution to model fidelity. The study also now sets
+material.castShadow=false for glass: its tracing library ignores the mesh flag
+for that purpose. This latest optical pass is local, after snapshot b6b3261.
+
+40D rear printed symbols: Canon EOS 40D instruction manual, page 17:
+https://gdlp01.c-wss.com/gds/6/0900008236/01/EOS40D_HG_EN.pdf
+Compared with the four-view product photograph (40d.jpg). Replaced the incorrect
+LV text with Print/Share artwork and STYLE with the Picture Style swatches.
+Playback/erase ink belongs above-right of the bottom buttons, not on their faces.
+Added the blue index/reduce and enlarge symbols below the AE/AF buttons. These
+new markings use planar polygons projected onto the rear cover/overmold, avoiding
+raised tubes for printed strokes. Existing R7 markings are unchanged.
+Verified regenerated mesh in the live viewer at rear and rear-oblique angles:
+/tmp/40d-legends-final-rear.png and /tmp/40d-legends-final-oblique.png.
+New blue symbols and Picture Style artwork are visible and follow the cover.
+The AE asterisk remains poorly visible; the upper button group, eyepiece and
+rubber/shroud transitions still need comparison and correction. This pass does
+not establish photorealism and remains local. Meshopt export and diff check pass.
+
+40D control seating and Eyecup Eb pass:
+The rear button depth is now measured against the cover/overmold BVH for each
+button, with an annular bezel and a separate satin plastic cap. The AE-lock mark
+uses three crossing ink strokes rather than the undersized font asterisk.
+Eyecup identification: Canon's EOS 40D support/catalog lists Eyecup Eb:
+https://www.canon.com.hk/en/product/catalog/productItemDetails.do?prrfnbr=100075
+Separate genuine accessory reference:
+https://www.cameranu.nl/p2739/canon-eyecup-eb
+https://static.cmra.nu/139/1399616414_679.jpg
+(local eyecup-eb.jpg). This shows an open U-shaped rubber surround, two lower
+feet and an exposed hard carrier/retaining rail. The 40D cup now has the lower
+central opening and additional lip profile stations. R7/C200 profiles retain
+their previous loops; no optical simulation claim is made from this change.
+Live-view verification: /tmp/40d-eb-rear.png and /tmp/40d-eb-oblique.png show the
+open lower eyecup, exposed retaining rail, visible AE asterisk and seated button
+rims. The satin caps now catch separate highlights instead of reading as rubber
+bumps. Remaining fidelity gaps include the opaque-looking finder optic, broad
+body/overmold transitions, subdued marking contrast and the lens optics. This
+is a local revision, not proof that the full photorealism goal is complete.
+
+Live studio rear-light/material inspection:
+The existing rear spotlight moves from (4,2,-3), intensity 20 to (-3,3,-5),
+intensity 55; its reflection card moves to the same rear quadrant and widens.
+This brings the rear controls out of shadow without adding lights/shadow maps.
+Rubber normal strength in the viewer changes from exported strength * .8 to
+* .35: the brighter rear view exposed excessively deep-looking grain. Paint
+normal strength stays unchanged. Checked 40D rear before/after normal adjustment
+(/tmp/40d-rear-balanced-light.png, /tmp/40d-rear-reduced-normal.png), R7 front,
+side and rear (/tmp/r7-balanced-{front,side,rear}.png), and the white 70-200 f/4
+on 40D (/tmp/40d-70-balanced-front.png). The new views improve visibility but
+still show synthetic optics, simplified controls and body transitions. These
+renderer changes remain local and do not prove photorealistic fidelity.
+
+28-135 optical recess isolation and machining pass:
+Temporarily hid only the outer glass material in the live viewer. The grey
+corrugated recess remained (/tmp/28-no-outer-glass.png), locating that appearance
+in the underlying geometry, not solely the front transmission shader. Restored
+the outer material immediately after the diagnostic. Compared the existing
+28-135-front.jpg: narrow annular cuts with broad lands and stepped inner group
+retainers. Replaced the sinusoidal recess corrugation with ten narrow V cuts;
+added four retaining shelves extending into the chamber wall. Dimensions remain
+visual approximations, not a recovered optical prescription. Inspected front
+and oblique views (/tmp/28-stepped-recess-{front,oblique}.png). Reduced recess
+sampling from the trial 240 rows to 120; compressed GLB is 1.60 MB rather than
+1.79 MB. Final capture: /tmp/28-stepped-final.png. Central coated reflections
+still look like simple discs; that fidelity gap remains open. Not published.
+
+28-135 inner dielectric/coating pass:
+Replaced this lens's inner brown metal/opacity-.12 layer with a nonmetallic,
+black-diffuse additive reflection layer, opacity 1, IOR 1.52, iridescence 1 and
+280–300 nm thickness range. This is a raster reflection approximation, not a
+multielement transmission simulation. Other lenses retain their existing
+material settings pending their own checks. Three.js material/shader references:
+https://threejs.org/docs/pages/MeshPhysicalMaterial.html
+node_modules/three/src/renderers/shaders/ShaderChunk/iridescence_fragment.glsl.js
+Initial dielectric test at the old curvature stayed disc-like and blue
+(/tmp/28-inner-dielectric.png). Increased the two 28-135 inner surface sags to
+.055 (visual approximation; not a recovered Canon optical prescription), while
+retaining positions/radii. The curved surfaces now catch moving, distinct
+softbox reflections in front and both oblique views:
+/tmp/28-curved-dielectric.png, /tmp/28-curved-dielectric-oblique.png,
+/tmp/28-curved-dielectric-opposite.png. The reflected coating colours are still
+an approximation and the optics remain visibly synthetic. GLB stays 1.60 MB.
+
+R7 rear screen/speaker/control pass:
+Compared r7-rear.webp (CameraClix product reference). Thin glass/gasket cube
+bevels were clamped by their .010 thickness, leaving nearly square corners.
+The R7 now uses an explicitly rounded outline extruded to that thickness;
+outline radius no longer depends on thickness. Added six real boolean speaker
+perforations with dark recessed floors below the finder/dial gap. A trial .09
+finder shift was rejected because it visibly misaligned the finder and hot shoe
+(/tmp/r7-surround-rear.png); original finder placement is retained. Replaced the
+small font AE asterisk with three strokes and added the blue playback frame,
+with a smaller triangle inside it. These changes are restricted to the R7.
+Final R7 viewer checks: /tmp/r7-rear-final.png and
+/tmp/r7-rear-final-oblique.png. Speaker recesses remain visible with the original
+finder placement; the AE and framed playback marks are visible. Oblique view
+shows the thin glass outline and its corner radius. Compressed R7 is 3.57 MB.
+The side door geometry, finder optics, broad shoulder transitions and overall
+material response remain visibly simplified. This pass stays local and does
+not establish photorealism. Earlier snapshot b6b3261's GitHub Pages workflow
+34161252863 was independently confirmed completed/success during this pass.
+
+R7 terminal covers and port-side strap eye:
+Reference: https://cameraland.co.za/products/canon-eos-r7-body
+https://cameraland.co.za/cdn/shop/files/cameraland-canon-eos-r7-mirrorless-camera-body-04.webp?v=1755191805&width=1400
+(local r7-terminals.webp). Four covers replace the generic rectangle: sloped
+MIC cover, long remote-terminal cover, lower headphone cover, and tall HDMI/USB
+cover. Outlines use coordinates from the image; molded MIC/HDMI text and remote,
+headphone and USB symbols follow the same surface projection as the covers.
+Added a shaped leatherette surround and thin recessed-looking seam borders.
+All cover vertices are projected onto the real housing before the common R7
+body deformation. Added a controllable outline-rounding parameter to profile;
+its existing default is preserved for all previous callers.
+The former square strap fitting overlapped MIC. Replaced it with a raised oval
+metal eye above the covers, posed against the shoulder normal with a stable
+across-camera axis (the initial shortest-arc rotation rolled the slot). Removed
+two generic side screws that incorrectly crossed the headphone/HDMI covers.
+The existing positive-side fill light changes from (2,1,5), intensity 8 to
+(4,3,1), intensity 25; the same three lights/shadow maps remain in use. Initial
+side captures exposed these overlaps/alignment issues before final correction:
+/tmp/r7-terminals-side.png and /tmp/r7-ports-final-side.png.
+The close-up exposed severe panel shading artifacts. Disabling normal/AO maps
+and then live shadows did not remove them; both diagnostics were fully restored.
+Denser interior triangulation, zeroing custom normals and smoothing the sampled
+support did not resolve the artifact. Rebuilding the deformed panel mesh data
+(vertices/faces/materials, with automatic smooth normals) finally removed the
+rippling. Retained custom-normal data was the decisive issue, not a material
+colour adjustment. Covers retain a smooth vertical support profile sampled
+across the casting depth, with narrow clearance; source outlines remain intact.
+Final checks: /tmp/r7-fresh-normals-final.png (side close-up),
+/tmp/r7-clean-ports-oblique.png and /tmp/r7-clean-ports-front.png. Four shaped
+covers, molded symbols and the horizontal oval strap eye are visible without
+the old overlaps or rippled panel shading. GLB is 3.90 MB. Broader body shading
+and optics still need fidelity work; consider retained custom normals when
+investigating remaining deformed-surface artifacts. All changes remain local.
+
+### R7 shoe and casting verification
+
+The R7 shoe now has a metal bed, inset black contact block, one large sync
+contact, four smaller communication contacts and a modeled accessory-contact
+row. Compared with r7-top.png and Canon's EOS R7 manual (21 accessory pins plus
+five flash contacts):
+https://global.canon/ja/c-museum/wp-content/uploads/2023/06/dslr901_en.pdf
+Live checks: /tmp/r7-shoe-top-shortlens.png and
+/tmp/r7-shoe-rear-oblique.png. Bed and contacts stay attached in both views.
+Mechanical dimensions remain photo-derived approximations.
+
+Top housing streak diagnosis: removing the roughness map initially appeared to
+remove streaks, but that also changed effective roughness to 1. Holding uniform
+roughness at 0.48 retained the streaks (/tmp/r7-shell-uniform-roughness.png).
+Disabling the normal map alone also retained them. Matching roughness tiling to
+normal tiling did not solve them. All runtime diagnostic overrides and the
+unproven tiling change were reverted. The earlier whole-housing fresh-normal
+experiment likewise did not improve the housing. Investigate casting geometry;
+do not cite map removal as a successful fix.
+A 24-iteration casting smoothing trial (baseline 4) did not remove the streaks
+in /tmp/r7-casting-smoothed-oblique.png. Reverted source and published-path GLB
+to the shoe revision. The ignored editable blend and uncompressed R7 output
+still contain this rejected smoothing trial; regenerate them from source before
+using them. Disabling live shadow maps also retained housing streaks
+(/tmp/r7-casting-no-shadow.png); restored shadow settings. Geometry remains a
+hypothesis, not a proven root cause. A next controlled comparison should hold
+roughness at 0.48 while disabling both normal mapping and AO, rather than
+changing effective roughness when removing a map.
+
+### R7 crown deformation sampling
+
+Controlled diagnostic /tmp/r7-controlled-no-maps.png holds roughness at 0.48
+and disables normal, roughness and AO maps together. Broad bands remain.
+Restored all runtime settings after the comparison. Increasing pre-remesh
+smoothing alone had not helped. Subdividing long upper-housing triangles before
+the nonlinear crown bend reduces broad shoulder bands in the actual viewer:
+/tmp/r7-tessellated-casting.png, compared with /tmp/r7-shoe-rear-oblique.png.
+The first subdivision export exposed rippled rear-cover shading, so the final
+mesh must also discard pre-deformation split normals. Neither a favorable
+shoulder view nor a successful export establishes completion.
+Final retained implementation subdivides upper shell/rear-cover edges longer
+than 0.05 model units before bending, then rebuilds those meshes with smooth
+normals from their final vertex positions. The combination matters: replacing
+normals alone had not removed broad shoulder bands; subdivision alone retained
+bad rear-cover split normals. Verified final export in the interactive viewer:
+/tmp/r7-formed-normals-oblique.png, /tmp/r7-formed-normals-rear.png and
+/tmp/r7-formed-normals-front.png. Rear rippling is removed and the shoulder bands
+are reduced. Remaining geometry, lettering, small seams and optics still fall
+short of the reference. Final compressed R7 is 4.44 MB (previous shoe version
+3.93 MB); loading remains opt-in. Editable blend and uncompressed GLB have been
+regenerated from the retained source, superseding the stale-output note above.
+
+### R7 mode dial reference
+
+Canon's Part Names page provides the twelve-position mode dial diagram:
+https://cam.start.canon/en/C005/manual/html/UG-00_Before_0090.html
+https://cam.start.canon/en/C005/manual/html/screens/UG-00_i0210.png
+Local reference: output/gear-reference/r7-mode-dial.png.
+The prior ten-position generic dial omitted Fv and Creative Filters and placed
+SCN/custom positions in the wrong sequence. The R7-specific dial now includes
+all twelve, larger type, outlined custom/Auto marks, an overlapping-circle
+Creative Filters symbol and a white body index seated on the shoulder.
+The first outlined C1/C2/C3 treatment crowded adjacent labels. Replaced it with
+stacked dark C/numeral glyphs on white badges, matching the product photo; Auto
+uses a green framed A with a raised plus. The dial is set to Tv at the index,
+as in r7-top.png. Final live checks: /tmp/r7-dial-final-top.png and
+/tmp/r7-dial-final-oblique.png. Twelve positions and their symbols are now
+visible in the interactive viewer. Fine glyphs still depend on zoom/resolution;
+this is not a claim that the full camera is photorealistic. R7-only geometry
+change; both regenerated GLB and editable source are local and uncommitted.
+
+### R7 shutter-area controls
+
+Compared top controls with output/gear-reference/r7-top.png at original
+resolution. The main wheel has a diamond pattern, while the prior generic dial
+used long axial ribs. Replaced it with a cylindrical core and a single mesh of
+12 axial rows × 32 diamond positions, using the existing satin control plastic.
+The first viewer check exposed over-large teeth and too much wheel above the
+casting. Reduced tooth relief from .008 to .003 model units and lowered its
+center by .023. Enlarged the M-Fn/ISO/LOCK legends; added the power selector's
+white index and movie pictogram. Printed marks follow the casting surface.
