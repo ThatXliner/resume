@@ -69,12 +69,15 @@ material('Pebbled rubber',(.009,.0095,.01),.66,0,LEATHER,3.0)
 M['Pebbled rubber'].name='Scanned grip rubber'
 material('Crinkle painted metal',(.010,.011,.013),.48,0,PEBBLE,.48)
 material('Focus rubber',(.011,.011,.012),.56,0,FINE,.35)
+material('Telephoto grip rubber',(.009,.009,.010),.68,0,FINE,.20)
+M['Telephoto grip rubber'].node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value=.30
 material('Blackened aperture steel',(.006,.007,.008),.42,.35)
 material('Eyepiece optical glass',(.008,.007,.012),.028,0)
 material('Anodized black',(.009,.01,.011),.28,.55)
 material('Deep black',(.002,.0024,.003),.55,0)
 material('Optical barrel flocking',(.003,.0035,.004),.84,0)
-material('Machined optical baffles',(.009,.010,.011),.57,0,FINE,.18)
+material('Machined optical baffles',(.009,.010,.011),.72,0,FINE,.30)
+M['Machined optical baffles'].node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value=.30
 M['Optical barrel flocking'].node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value=.05
 # Fine annular machining changes finish without subpixel mesh edges.
 vr=np.linspace(0,1,512)[:,None];rough=np.full((512,16),.84)
@@ -95,6 +98,19 @@ material('Green ink',(.07,.53,.25),.45,0)
 material('LCD glass',(.009,.017,.02),.1,.22)
 # Opaque display stack under cover glass: a black dielectric, not tinted metal.
 material('Inactive display glass',(.0025,.003,.0032),.075,0)
+# Rear camera displays have a darker perimeter around the inactive pixel area.
+# Bake that subtle distinction into one base-color map under the glass response.
+for display_name,rect in [('R7 display glass',(19,365,51,461)),('40D display glass',(10,374,17,495))]:
+    face=np.empty((384,512,3));face[:]=(.007,.009,.010)
+    top,bottom,left,right=rect;face[top:bottom,left:right]=(.016,.020,.022)
+    face=np.where(face<=.0031308,12.92*face,1.055*face**(1/2.4)-.055)
+    display_image=image(display_name.lower().replace(' ','-'),face);display_image.colorspace_settings.name='sRGB'
+    material(display_name,(1,1,1),.075,0)
+    display_nodes=M[display_name].node_tree
+    tex=display_nodes.nodes.new('ShaderNodeTexImage');tex.image=display_image
+    display_nodes.links.new(tex.outputs['Color'],display_nodes.nodes.get('Principled BSDF').inputs['Base Color'])
+
+
 material('LCD display',(.075,.095,.068),.28,0)
 material('Inactive LCD segments',(.040,.056,.038),.34,0)
 material('Sensor filter edge',(.018,.04,.09),.17,.3)
@@ -102,6 +118,8 @@ material('Sensor coating',(.004,.018,.013),.065,.25)
 material('Reflex mirror',(.62,.64,.63),.045,1)
 material('Optical glass',(.88,.98,.94),.045,0,transmission=1)
 material('Inner optical glass',(.65,.78,.95),.07,0,transmission=.94)
+material('Inner optical glass rear',(.65,.78,.95),.07,0,transmission=.94)
+M['Inner optical glass rear'].node_tree.nodes.get('Principled BSDF').inputs['IOR'].default_value=1.60
 
 def register(o,name,mat):
     o.name=current+' / '+name
@@ -173,13 +191,17 @@ def optical_element(name,z,r,sag=.025,thickness=.035,mat='Optical glass',back_sa
             verts.extend((rr*cos(i*2*pi/segments),rr*sin(i*2*pi/segments),zz) for i in range(segments))
             for i in range(segments):
                 nxt=(i+1)%segments
-                if j==1:faces.append((center,start+i,start+nxt))
-                else:faces.append((rings[-2]+i,start+i,start+nxt,rings[-2]+nxt))
+                face=(center,start+i,start+nxt) if j==1 else (rings[-2]+i,start+i,start+nxt,rings[-2]+nxt)
+                faces.append(face if side==1 else tuple(reversed(face)))
         surface.append(rings[-1])
     for i in range(segments):
         nxt=(i+1)%segments;faces.append((surface[0]+i,surface[1]+i,surface[1]+nxt,surface[0]+nxt))
     mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update();o=bpy.data.objects.new(name,mesh);scene.collection.objects.link(o);register(o,name,mat)
     for p in mesh.polygons:p.use_smooth=True
+    # Polished faces do not bend toward the cylindrical cut edge. Sharing
+    # smooth normals here creates a false bright rim around each element.
+    split=o.modifiers.new('Separate polished faces from cut edge','EDGE_SPLIT')
+    split.split_angle=pi/4;split.use_edge_angle=True;apply(o,split)
     return o
 
 def eyecup(x,y,z,body='c200'):
@@ -200,6 +222,10 @@ def eyecup(x,y,z,body='c200'):
                 a=start+i*pi/2/steps;verts.append((x+cx+r*cos(a),y+cy+r*sin(a),z+depth))
     for j in range(len(loops)):
         for i in range(n):faces.append((j*n+i,j*n+(i+1)%n,((j+1)%len(loops))*n+(i+1)%n,((j+1)%len(loops))*n+i))
+    if body=='r7':
+        # ER eyecup shoulders taper inward above the wider lower rubber lip.
+        # Keep the separate optical carrier and proximity sensor unchanged.
+        verts=[(x+(vx-x)*(1-.10*max(0,min(1,(vy-y)/.48+.5))),vy,vz) for vx,vy,vz in verts]
     mesh=bpy.data.meshes.new('Hollow eyecup');mesh.from_pydata(verts,[],faces);mesh.update()
     o=bpy.data.objects.new('Eyecup',mesh);scene.collection.objects.link(o);register(o,'Hollow molded eyecup','Focus rubber');finish(o,.012,3)
     if body=='40d':
@@ -211,9 +237,11 @@ def eyecup(x,y,z,body='c200'):
         cut=o.modifiers.new('Eb open lower lip','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter;apply(o,cut)
         bpy.data.objects.remove(cutter,do_unlink=True)
     # Separate optical carrier inside the rubber cup; the DSLR has no eye sensor.
-    box('Eyepiece inner carrier',(x,y,z-.045),(.65,.44,.034) if body=='c200' else (.59,.35,.034),'Graphite polymer',.038)
+    if body=='r7':rounded_panel('Eyepiece inner carrier',(x,y,z-.045),(.59,.35,.034),.065,'Graphite polymer')
+    else:box('Eyepiece inner carrier',(x,y,z-.045),(.65,.44,.034) if body=='c200' else (.59,.35,.034),'Graphite polymer',.038)
     optical_x=x+.035 if body=='r7' else x-.045 if body=='c200' else x
-    box('Eyepiece optical recess',(optical_x,y,z-.066),(.43,.38,.016) if body=='c200' else (.365,.275,.016),'Deep black',.029)
+    if body=='r7':rounded_panel('Eyepiece optical recess',(optical_x,y,z-.066),(.365,.275,.016),.029,'Deep black')
+    else:box('Eyepiece optical recess',(optical_x,y,z-.066),(.43,.38,.016) if body=='c200' else (.365,.275,.016),'Deep black',.029)
     # A shallow convex optical face catches reflections across its curved surface.
     sag=.022 if body=='c200' else .029 if body=='r7' else .024
     vertices=[(optical_x,y,z-.078-sag)];polygons=[];count=52 if body=='c200' else 100;rows=8 if body=='c200' else 32
@@ -251,8 +279,8 @@ def eyecup(x,y,z,body='c200'):
         box('C200 eye sensor window',(x+.244,y,z-.079),(.046,.136,.006),'Sensor coating',.009)
         return
     if body=='r7':
-        box('Viewfinder proximity sensor bezel',(x-.237,y,z-.065),(.091,.139,.016),'Deep black',.016)
-        box('Viewfinder proximity sensor window',(x-.237,y,z-.076),(.063,.110,.006),'Sensor coating',.013)
+        rounded_panel('Viewfinder proximity sensor bezel',(x-.237,y,z-.065),(.091,.139,.016),.016,'Deep black')
+        rounded_panel('Viewfinder proximity sensor window',(x-.237,y,z-.076),(.063,.110,.006),.013,'Sensor coating')
     else:
         box('Eyecup retaining lower rail',(x,y-.207,z-.060),(.47,.034,.030),'Anodized black',.006)
     # Diopter wheel sits on the right side of the finder when viewed from behind.
@@ -279,7 +307,21 @@ def text(name,words,p,size=.08,mat='White ink',rotation=(0,0,0),font='Arial',ali
     o=bpy.data.objects.new(name,curve);scene.collection.objects.link(o);o.location=p;o.rotation_euler=rotation;register(o,name,mat);active(o);bpy.ops.object.convert(target='MESH');return o
 
 def arc_text(words,z,radius,size=.048,start=None,span=None,mat='White ink',bottom=False):
-    if span is None:span=len(words)*size*.59/radius
+    if span is None:
+        # Bend the complete typeset line, preserving the font's glyph widths,
+        # spaces and kerning instead of assigning one equal angle per character.
+        obj=text('Front ring inscription',words,(0,0,0),size,mat)
+        if not obj.data.vertices:return
+        left=min(v.co.x for v in obj.data.vertices);right=max(v.co.x for v in obj.data.vertices)
+        center=(left+right)*.5
+        sweep=(right-left)/radius
+        midpoint=pi/2 if start is None else start-sweep/2
+        for vertex in obj.data.vertices:
+            x,y,depth=vertex.co
+            angle=midpoint-(x-center)/radius
+            vertex.co=((radius+y)*cos(angle),(radius+y)*sin(angle),z+depth)
+        obj.data.update()
+        return
     if start is None:start=pi/2+span/2
     for i,ch in enumerate(words):
         angle=start-i*span/max(1,len(words)-1)
@@ -332,15 +374,24 @@ def loft_grip(name,rows,mat):
     for p in o.data.polygons:p.use_smooth=True
     return o
 
-def radial_ribs(name,z,r,length,count=120,mat='Focus rubber'):
-    # One mesh for all of the fine molded ribs avoids hundreds of draw calls.
+def radial_ribs(name,z,r,length,count=120,mat='Focus rubber',segments=1):
+    # Join the molded lands into one mesh, including staggered breaks on the f/4.
     verts=[];faces=[]
     for i in range(count):
-        angle=i*2*pi/count;da=pi/count*.35
-        for zz in [z-length/2,z+length/2]:
-            for rr,aa in [(r,angle-da),(r+.007,angle-da),(r+.007,angle+da),(r,angle+da)]:verts.append((rr*cos(aa),rr*sin(aa),zz))
-        k=i*8;faces.extend([tuple(k+j for j in ids) for ids in [(0,1,2,3),(4,7,6,5),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)]])
-    mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update();o=bpy.data.objects.new(name,mesh);scene.collection.objects.link(o);register(o,name,mat);finish(o,.0018,2);return o
+        angle=i*2*pi/count;da=pi/count*(.65 if segments>1 else .35)
+        ends=[-length/2,length/2]
+        if segments>1:
+            step=length/segments
+            ends=sorted(ends+[-length/2+step*(j+(.18 if i%2 else -.18)) for j in range(1,segments)])
+        for j in range(len(ends)-1):
+            gap=.007 if segments>1 else 0
+            lo=z+ends[j]+(gap/2 if j else 0)
+            hi=z+ends[j+1]-(gap/2 if j<len(ends)-2 else 0)
+            k=len(verts)
+            for zz in [lo,hi]:
+                for rr,aa in [(r,angle-da),(r+.007,angle-da),(r+.007,angle+da),(r,angle+da)]:verts.append((rr*cos(aa),rr*sin(aa),zz))
+            faces.extend([tuple(k+n for n in ids) for ids in [(0,1,2,3),(4,7,6,5),(0,4,5,1),(1,5,6,2),(2,6,7,3),(3,7,4,0)]])
+    mesh=bpy.data.meshes.new(name);mesh.from_pydata(verts,[],faces);mesh.update();o=bpy.data.objects.new(name,mesh);scene.collection.objects.link(o);register(o,name,mat);finish(o,.0025 if segments>1 else .0018,2);return o
 
 def dial(p,r=.19,axis='y',mode=False,width=.085):
     start=len(OBJECTS);cyl('Control dial rubber', (0,0,0),r,.085,'Focus rubber');radial_ribs('Knurled dial edge',0,r,.063,64)
@@ -366,8 +417,49 @@ def dial(p,r=.19,axis='y',mode=False,width=.085):
                 text('Mode '+label,label,(0,0,.056),.046 if label=='SCN' else .062,ink)
             pose=Matrix.Translation(Vector((cos(a)*r*.70,sin(a)*r*.70,0)))@Matrix.Rotation(a-pi/2,4,'Z')
             for obj in OBJECTS[mark_start:]:obj.matrix_world=pose@obj.matrix_world
+    elif mode=='40d':
+        # Canon EOS 40D manual p.20: 15 positions, with a gap between C3
+        # and Flash Off. Scene icons are separate marks, not an AUTO label.
+        modes=['Auto','P','Tv','Av','M','A-DEP','C1','C2','C3']
+        positions=[(label,i*pi/8) for i,label in enumerate(modes)]
+        positions += [(label,-(i+1)*pi/8) for i,label in enumerate(['Portrait','Landscape','Close-up','Sports','Night','Flash Off'])]
+        def stroke(name,points,ink='White ink',width=.0018):
+            line('40D mode '+name,[(u,v,.057) for u,v in points],width,ink)
+        def disc(name,x,y,rr):cyl('40D mode '+name,(x,y,.0565),rr,.001,'White ink',vertices=24,bevel=0)
+        for label,a in positions:
+            mark_start=len(OBJECTS)
+            if label=='Auto':
+                stroke(label,[(-.019,-.014),(.019,-.014),(.019,.014),(-.019,.014),(-.019,-.014)],'Green ink',.003)
+            elif label.startswith('C') and label!='Close-up':
+                box('40D custom mode badge',(0,0,.056),(.043,.035,.001),'White ink',.003)
+                text('40D mode '+label,label,(0,0,.057),.028,'Deep black')
+            elif label in ['P','Tv','Av','M','A-DEP']:
+                text('40D mode '+label,label,(0,0,.057),.027 if label=='A-DEP' else .041)
+            elif label in ['Portrait','Night']:
+                disc('portrait head',0,.009,.008)
+                stroke('portrait shoulders',[(-.017,-.016),(-.013,-.006),(0,-.002),(.013,-.006),(.017,-.016)],width=.0035)
+                if label=='Night':
+                    stroke('night frame',[(-.023,-.021),(.023,-.021),(.023,.023),(-.023,.023),(-.023,-.021)])
+                    stroke('night star',[(-.016,.020),(-.016,.010)])
+                    stroke('night star cross',[(-.021,.015),(-.011,.015)])
+            elif label=='Landscape':
+                stroke('mountains',[(-.024,-.016),(-.010,.013),(.001,-.004),(.010,.019),(.026,-.016),(-.024,-.016)],width=.003)
+                disc('landscape sun',-.019,.018,.005)
+            elif label=='Close-up':
+                for angle in [0,pi/2,pi,3*pi/2]:disc('flower petal',.009*cos(angle),.007+.009*sin(angle),.0065)
+                stroke('flower stem',[(0,.002),(0,-.020)])
+                stroke('flower leaf',[(0,-.012),(-.012,-.007),(-.007,-.017),(0,-.016)])
+            elif label=='Sports':
+                disc('runner head',.003,.020,.0055)
+                for points in [[(-.005,.009),(.007,-.006),(-.009,-.020)],[(.007,-.006),(.018,-.011),(.022,-.021)],[(-.005,.009),(-.018,.003),(-.024,.012)],[(-.003,.006),(.013,.006),(.020,.016)]]:stroke('runner',points,width=.0025)
+            else:
+                stroke('flash off frame',[(-.024,-.019),(.024,-.019),(.024,.019),(-.024,.019),(-.024,-.019)])
+                stroke('flash bolt',[(.001,.015),(-.008,.001),(.006,.003),(-.003,-.014)],width=.0025)
+                stroke('flash strike',[(-.022,.021),(.022,-.021)])
+            pose=Matrix.Translation(Vector((cos(a)*r*.71,sin(a)*r*.71,0)))@Matrix.Rotation(a-pi/2,4,'Z')
+            for obj in OBJECTS[mark_start:]:obj.matrix_world=pose@obj.matrix_world
     elif mode:
-        modes=['M','Av','Tv','P','AUTO','C3','C2','C1','A-DEP'] if mode=='40d' else ['M','Av','Tv','P','Fv','A+','C1','C2']
+        modes=['M','Av','Tv','P','Fv','A+','C1','C2']
         for i,t in enumerate(modes):
             a=i*2*pi/len(modes);text('Mode '+t,t,(cos(a)*r*.72,sin(a)*r*.72,.056),.041,'Green ink' if t=='A+' else 'White ink',rotation=(0,0,a-pi/2))
     else:cyl('Dial center',(0,0,.052),r*.44,.025,'Graphite polymer')
@@ -408,7 +500,19 @@ def mount(z=.48,mirror=False,rf=False,cinema=False):
         box('Sensor frame',(0,0,sensor_z-.015),(.48,.33,.025) if rf else (.53,.36,.025),'Anodized black',.018)
         if rf:box('Sensor filter surround',(0,0,sensor_z-.003),(.421,.285,.006),'Sensor filter edge',.003)
         box('APS-C sensor',(0,0,sensor_z),(22.3/55,14.8/55,.004) if rf else (.46,.30,.004),'Sensor coating' if rf else 'LCD glass',.002)
+    if rf:
+        # Matte chamber lining masks the exposed grey casting behind the RF throat.
+        rear=sensor_z-.030;front_wall=z+.033
+        ring('RF chamber lining',(rear+front_wall)/2,.434,.419,front_wall-rear,'Optical barrel flocking')
+        cyl('RF sensor chamber rear baffle',(0,0,rear),.433,.006,'Optical barrel flocking',vertices=128,bevel=.001)
     if mirror:
+        rear=sensor_z-.018;front_wall=z+.033
+        ring('EF mirror chamber lining',(rear+front_wall)/2,.444,.423,front_wall-rear,'Optical barrel flocking')
+        cyl('Mirror chamber rear baffle',(0,0,rear),.443,.006,'Optical barrel flocking',vertices=128,bevel=.001)
+        carrier=rounded_panel('Mirror box front carrier',(0,0,.390),(.70,.65,.025),.035,'Graphite polymer')
+        opening=rounded_panel('Mirror box aperture cutter',(0,0,.390),(.61,.47,.10),.018,None)
+        cut=carrier.modifiers.new('Rectangular mirror box opening','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=opening;apply(carrier,cut)
+        OBJECTS.remove(opening);bpy.data.objects.remove(opening,do_unlink=True)
         frame=box('Reflex mirror frame',(0,0,.17),(.56,.50,.018),'Anodized black',.008);frame.rotation_euler.x=-pi/4
         glass=box('Reflex mirror surface',(0,.009,.179),(.52,.46,.003),'Reflex mirror',.002);glass.rotation_euler.x=-pi/4
     for i in range(12 if rf else 10):
@@ -422,6 +526,24 @@ def body(which):
     back=-.58 if dslr else -.39;front=.28 if dslr else .25
     shell=profile('Continuous cast housing',outline,back,front,'Crinkle painted metal',bevel=.055 if dslr else .085)
     if dslr:
+        # The prism casting projects forward beneath the closed flash. A flat
+        # extrusion ended behind its cover and left a visibly unsupported brow.
+        # Sample the curved transition throughout the front face, not just at
+        # its outline; otherwise large triangles interpolate a faceted shoulder.
+        import bmesh
+        bm=bmesh.new();bm.from_mesh(shell.data)
+        for _ in range(6):
+            bmesh.ops.triangulate(bm,faces=list(bm.faces))
+            edges=[e for e in bm.edges if e.calc_length()>.06]
+            if not edges:break
+            bmesh.ops.subdivide_edges(bm,edges=edges,cuts=1,use_grid_fill=True)
+        bmesh.ops.triangulate(bm,faces=list(bm.faces));bm.to_mesh(shell.data);bm.free()
+        for v in shell.data.vertices:
+            x,y,z=v.co
+            upper=max(0,min(1,(y-.35)/.45));upper=upper*upper*(3-2*upper)
+            forward=max(0,min(1,(z-back)/(front-back)))
+            v.co.z+=.20*math.exp(-(x/.48)**4)*upper*forward
+        shell.data.update()
         bpy.ops.mesh.primitive_cylinder_add(vertices=96,radius=.445,depth=.88,location=(0,0,.05));bore=bpy.context.object
         cut=shell.modifiers.new('Open reflex mirror chamber','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=bore;apply(shell,cut);bpy.data.objects.remove(bore,do_unlink=True)
     if not dslr:
@@ -481,8 +603,10 @@ def body(which):
             for x,y in section:
                 upper=max(0,min(1,(y-.80)/.275))
                 crown=-.03*(1-t)-.09*t+.035*sin(pi*t)
-                # Reference underside rises slightly toward the front lip.
-                yy=y+crown*upper-.025*(1-t)*(1-upper)
+                # The side reference has a relieved, curved underside between
+                # the rear seat and front lip, rather than a straight slab.
+                underside=-.025*(1-t)+.065*sin(pi*t)
+                yy=y+crown*upper+underside*(1-upper)
                 verts.append((x*(1-.20*t)*(1-end_round/.49),yy+( .925-yy)*end_round/.125,-.36+.915*t))
         for row in range(len(stations)-1):
             for i in range(n):
@@ -497,7 +621,10 @@ def body(which):
         # A normal-offset copy left small exterior shell islands visible through
         # the tapered hood near y=.96, z=.24.
         for v in cavity.data.vertices:
-            v.co.x*=1.25
+            # Keep the lower seating seam close to the cover. The wider
+            # clearance is needed only higher up to trim the original crown.
+            crown_clearance=max(0,min(1,(v.co.y-.82)/.13))
+            v.co.x*=1.008+.242*crown_clearance
             v.co.y+=.14*max(0,min(1,(v.co.y-.80)/.20))
         cavity.data.update()
         cut=shell.modifiers.new('Flash cover seating pocket','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cavity;apply(shell,cut)
@@ -505,15 +632,31 @@ def body(which):
         line('Flash cover front seam',[(x*.8,y-.09*max(0,min(1,(y-.8)/.275)),.559) for x,y in [(-.46,.82),(-.37,.95),(-.27,1.035),(.27,1.035),(.37,.95),(.46,.82)]],.003)
         cyl('Flash release',(1.073,.37,.12),.05,.027,'Graphite polymer','x',48)
     text('Canon wordmark','Canon',(0,.896 if dslr else .840,.561 if dslr else front+.006),.12,font='Canon')
-    text('EOS badge','EOS',(.84,.35 if dslr else .36,front+(.043 if dslr else .040)),.075)
-    text('Model badge','40D' if dslr else 'R7',(.84,.245 if dslr else .205,front+(.044 if dslr else .041)),.084 if dslr else .090)
-    if not dslr:box('Raised R7 badge',(.84,.285,front+.026),(.245,.30,.015),'Graphite polymer',.036)
+    text('EOS badge','EOS',(.84 if dslr else .78,.35 if dslr else .490,front+(.043 if dslr else .035)),.075 if dslr else .110)
+    text('Model badge','40D' if dslr else 'R7',(.84 if dslr else .78,.245 if dslr else .355,front+(.044 if dslr else .035)),.084 if dslr else .130)
+    if not dslr:
+        rounded_panel('Raised R7 badge',(.78,.415,front+.026),(.270,.280,.015),.030,'Graphite polymer')
+        from mathutils.bvhtree import BVHTree
+        surface=BVHTree.FromObject(shell,bpy.context.evaluated_depsgraph_get())
+        for o in OBJECTS[start:]:
+            if o.name not in ['Raised R7 badge','EOS badge','Model badge']:continue
+            active(o);bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
+            backmost=min(v.co.z for v in o.data.vertices)
+            for v in o.data.vertices:
+                hit,_,_,_=surface.ray_cast(Vector((v.co.x,v.co.y,3)),Vector((0,0,-1)),5)
+                if hit is None:raise RuntimeError('R7 badge extends outside housing')
+                v.co.z=hit.z+(.002 if o.name=='Raised R7 badge' else .0175)+(v.co.z-backmost)
+            o.data.update()
     if dslr:box('Raised model badge',(.84,.295,front+.027),(.245,.26,.027),'Anodized black',.038)
     cyl('Lens release bezel',(.69,-.06,.35),.099,.1,'Deep black')
     cyl('Lens release button',(.70,-.05,.412),.069,.025,'Graphite polymer')
     if dslr:cyl('Depth preview',(-1.1,-.37,.61),.061,.025,'Graphite polymer')
     if not dslr:
-        cyl('AF MF selector',(-.71,-.59,.338),.10,.04,'Anodized black');cyl('AF MF selector center',(-.71,-.59,.365),.058,.015,'Graphite polymer');text('Focus mode legend','MF\nAF',(-.91,-.59,.335),.039)
+        profile('AF MF selector surround',[(-.79,-.52),(-.71,-.48),(-.63,-.52),(-.61,-.59),(-.55,-.70),(-.60,-.74),(-.68,-.68),(-.77,-.68),(-.83,-.61)],front+.012,.306,'Graphite polymer',.012)
+        cyl('AF MF selector',(-.71,-.59,.338),.10,.04,'Anodized black')
+        cyl('AF MF selector center',(-.71,-.59,.365),.058,.015,'Graphite polymer')
+        lever=box('AF MF selector lever',(-.630,-.676,.343),(.108,.034,.021),'Graphite polymer',.008);lever.rotation_euler.z=-.83
+        text('Focus mode legend','MF\nAF',(-.87,-.59,front+.018),.044)
     mountStart=len(OBJECTS)
     mount(.48,mirror=dslr,rf=not dslr)
     mount_objects=set(OBJECTS[mountStart:])
@@ -571,6 +714,12 @@ def body(which):
         obj=bpy.data.objects.new('Main command wheel diamonds',mesh);scene.collection.objects.link(obj);register(obj,'Main command wheel diamonds','Satin control plastic')
         pose=Matrix.Translation(wheel)@Matrix((Vector((0,0,-1)),wheel_up,wheel_axis)).transposed().to_4x4()
         for obj in OBJECTS[wheel_start:]:obj.matrix_world=pose@obj.matrix_world
+        # Open the grip above the wheel. The convex casting otherwise buries
+        # its center even when the axle follows the shoulder's cross-slope.
+        cutter=box('Main wheel slot cutter',(0,.20,0),(.088,.40,.282),None,.006)
+        cutter.matrix_world=pose@cutter.matrix_world
+        cut=shell.modifiers.new('Recessed main wheel slot','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter;apply(shell,cut)
+        OBJECTS.remove(cutter);bpy.data.objects.remove(cutter,do_unlink=True)
 
     if dslr:
         # The status window is recessed into the continuous shoulder casting.
@@ -646,15 +795,21 @@ def body(which):
     # The 40D's old bezel rear face lay inside the cover, leaving a razor-thin
     # edge. Seat the frame outside the cover and the glass just in front of it.
     bezel_z=rz-.057 if dslr else rz
-    box('LCD bezel',(screenX,screenY,bezel_z),(screenW,screenH,.055 if dslr else .115),'Deep black',.045)
+    if dslr:rounded_panel('LCD bezel',(screenX,screenY,bezel_z),(screenW,screenH,.055),.075,'Deep black')
+    else:box('LCD bezel',(screenX,screenY,bezel_z),(screenW,screenH,.115),'Deep black',.045)
     glass_z=rz-.088 if dslr else rz-.066
     glass_w=screenW-.12;glass_h=screenH-.15
     if dslr:
-        box('LCD perimeter gasket',(screenX,screenY+.015,glass_z+.003),(glass_w+.024,glass_h+.024,.010),'Graphite polymer',.032)
-        box('LCD cover glass',(screenX,screenY+.015,glass_z-.003),(glass_w,glass_h,.010),'Inactive display glass',.026)
+        rounded_panel('LCD perimeter gasket',(screenX,screenY+.015,glass_z+.003),(glass_w+.024,glass_h+.024,.010),.060,'Graphite polymer')
+        display=rounded_panel('LCD cover glass',(screenX,screenY+.015,glass_z-.003),(glass_w,glass_h,.010),.050,'40D display glass')
     else:
         rounded_panel('LCD perimeter gasket',(screenX,screenY+.015,glass_z+.003),(glass_w+.024,glass_h+.024,.010),.032,'Graphite polymer')
-        rounded_panel('LCD cover glass',(screenX,screenY+.015,glass_z-.003),(glass_w,glass_h,.010),.026,'Inactive display glass')
+        display=rounded_panel('LCD cover glass',(screenX,screenY+.015,glass_z-.003),(glass_w,glass_h,.010),.026,'R7 display glass')
+    uv=display.data.uv_layers.new(name='UVMap');display['preserve_uv']=True
+    for face in display.data.polygons:
+        for loop in face.loop_indices:
+            v=display.data.vertices[display.data.loops[loop].vertex_index].co
+            uv.data[loop].uv=((v.x-screenX)/glass_w+.5,(v.y-screenY-.015)/glass_h+.5)
     if dslr:text('Rear Canon logo','Canon',(screenX,screenY-screenH/2+.047,rz-.087),.058,rotation=(0,pi,0),font='Canon')
     eyecup(.04,.69,rz,which)
     if not dslr:
@@ -678,8 +833,20 @@ def body(which):
         for i in range(88):
             a=i*2*pi/88
             tooth=box('Rear wheel radial grip',(-.73+cos(a)*.273,-.32+sin(a)*.273,rz-.101),(.047,.011,.013),'Focus rubber',.004);tooth.rotation_euler.z=a
-        ring('Quick wheel bowl outer',rz-.073,.246,.182,.022,'Graphite polymer',center=(-.73,-.32))
-        ring('Quick wheel bowl inner',rz-.061,.186,.085,.022,'Graphite polymer',center=(-.73,-.32))
+        # A continuous concave molded face joins the grip ring to the SET
+        # socket. The former two flat annuli introduced a false circular step.
+        segments=128;rows=20;verts=[];faces=[]
+        for row in range(rows+1):
+            t=row/rows;radius=.246-(.246-.085)*t
+            depth=rz-.084+.034*(2*t-t*t)
+            verts.extend((-.73+radius*cos(i*2*pi/segments),-.32+radius*sin(i*2*pi/segments),depth) for i in range(segments))
+        for row in range(rows):
+            for i in range(segments):
+                j=(i+1)%segments;a=row*segments;b=(row+1)*segments
+                faces.append((a+i,b+i,b+j,a+j))
+        mesh=bpy.data.meshes.new('Continuous quick wheel bowl');mesh.from_pydata(verts,[],faces);mesh.update()
+        bowl=bpy.data.objects.new('Continuous quick wheel bowl',mesh);scene.collection.objects.link(bowl);register(bowl,'Continuous quick wheel bowl','Graphite polymer')
+        for face in mesh.polygons:face.use_smooth=True
         cyl('SET button socket',(-.73,-.32,rz-.068),.095,.017,'Deep black')
         sphere('SET button',(-.73,-.32,rz-.084),(.080,.080,.016),'Graphite polymer')
         text('SET legend','SET',(-.73,-.32,rz-.102),.037,rotation=(0,pi,0))
@@ -688,7 +855,9 @@ def body(which):
         sphere('Multi controller tip',(-.52,.24,rz-.106),(.048,.048,.013),'Focus rubber')
         sphere('Rear power recess',(-.34,-.74,rz-.032),(.145,.09,.027),'Deep black')
         lever=box('Rear power lever',(-.35,-.74,rz-.066),(.23,.045,.029),'Graphite polymer',.015);lever.rotation_euler.z=.06
-        text('Rear power markings','ON\nOFF',(-.53,-.75,rz-.045),.032,rotation=(0,pi,0))
+        text('Rear power markings','ON\nOFF',(-.53,-.75,rz-.045),.045,rotation=(0,pi,0))
+        marker=box('Rear power lever index',(-.437,-.745,rz-.0815),(.040,.010,.002),'White ink',.001);marker.rotation_euler.z=.06
+        line('Rear power markings quick control position',[(-.492,-.675,rz-.045),(-.548,-.655,rz-.045),(-.548,-.625,rz-.045)],.003,'White ink')
     else:
         # Rear R7 reference: a deeply recessed joystick inside a knurled wheel,
         # plus a separate four-way rocker below the sculpted thumb overmold.
@@ -853,10 +1022,18 @@ def body(which):
         text('Video out molded legend','VIDEO\nOUT',(1.114,.072,-.235),.043,'Deep black',rotation=(0,pi/2,0))
         # Flash sync and remote-control symbols are molded into the other flap.
         line('Sync flash symbol',[(1.114,.12,.055),(1.114,.015,.075),(1.114,.035,.030),(1.114,-.055,.048)],.006,'Deep black')
-        line('Remote socket symbol',[(1.114,-.30,.075),(1.114,-.26,.075),(1.114,-.24,.035),(1.114,-.26,-.005),(1.114,-.30,-.005)],.004,'Deep black')
-        line('USB stem',[(1.114,-.42,-.235),(1.114,-.29,-.235)],.004,'Deep black')
-        line('USB left branch',[(1.114,-.37,-.235),(1.114,-.34,-.20),(1.114,-.30,-.20)],.004,'Deep black')
-        line('USB right branch',[(1.114,-.39,-.235),(1.114,-.35,-.27),(1.114,-.32,-.27)],.004,'Deep black')
+        def terminal_symbol(name,center_y,center_z,points,width=.003):
+            line(name,[(1.114,center_y+v,center_z-u) for u,v in points],width,'Deep black')
+        terminal_symbol('Remote release plug',-.30,.035,[(-.021,-.027),(-.021,.010)],.007)
+        terminal_symbol('Remote release cable',-.30,.035,[(-.018,.016),(-.018,.035),(-.009,.044),(.005,.044),(.015,.034),(.015,-.020)])
+        terminal_symbol('Remote release socket',-.30,.035,[(.019,.004),(.027,.004),(.027,-.013)],.005)
+        terminal_symbol('USB stem',-.30,-.235,[(-.065,0),(.071,0)])
+        terminal_symbol('USB arrow',-.30,-.235,[(.058,.013),(.073,0),(.058,-.013)])
+        terminal_symbol('USB upper branch',-.30,-.235,[(-.034,0),(-.008,.029),(.023,.029)])
+        terminal_symbol('USB lower branch',-.30,-.235,[(-.016,0),(.014,-.029),(.044,-.029)])
+        terminal_symbol('USB square endpoint',-.30,-.235,[(.039,-.035),(.051,-.035),(.051,-.023),(.039,-.023),(.039,-.035)])
+        terminal_symbol('USB round endpoint',-.30,-.235,[(.028+.006*cos(i*2*pi/24),.029+.006*sin(i*2*pi/24)) for i in range(25)])
+        terminal_symbol('USB origin',-.30,-.235,[(-.067+.008*cos(i*2*pi/24),.008*sin(i*2*pi/24)) for i in range(25)])
         from mathutils.bvhtree import BVHTree
         bpy.context.view_layer.update()
         terminal_surface=BVHTree.FromObject(shell,bpy.context.evaluated_depsgraph_get())
@@ -899,6 +1076,14 @@ def body(which):
             o=profile(name,[(-z,y) for _,y,z in yz],1.080,depth,mat,.0015,rounding=.010)
             o.rotation_euler.y=pi/2
         port_cover('Terminal area leatherette',[(211,177),(369,169),(412,266),(416,524),(388,564),(212,570)],1.094,'Pebbled rubber')
+        # Dark finger-access pockets extend beyond the flap edges in the
+        # side reference. They sit below the cover faces, above the overmold.
+        for name,points in [
+            ('Microphone',[(317,204),(334,204),(342,213),(342,242),(315,259),(306,252)]),
+            ('Remote',[(305,407),(319,402),(320,465),(307,474),(299,462)]),
+            ('Headphone',[(317,505),(338,514),(343,524),(343,550),(328,560),(316,550)]),
+        ]:
+            port_cover(name+' finger recess',points,1.104,'Deep black')
         covers=[
             ('Microphone',[(237,193),(316,193),(328,208),(328,239),(290,257),(238,278),(229,267),(222,218)]),
             ('Remote',[(233,294),(285,266),(313,291),(313,468),(290,485),(238,456),(231,416),(243,395),(243,339),(231,319)]),
@@ -941,7 +1126,7 @@ def body(which):
             return .5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t)
         for o in OBJECTS[port_start:]:
             active(o);bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
-            if 'cover' in o.name or 'leatherette' in o.name:
+            if 'cover' in o.name or 'leatherette' in o.name or 'finger recess' in o.name:
                 import bmesh
                 bm=bmesh.new();bm.from_mesh(o.data)
                 for _ in range(5):
@@ -1047,8 +1232,11 @@ def fifty_prime():
     for i in range(segments):
         j=(i+1)%segments;faces.append((i,j,segments+j,segments+i))
     mesh=bpy.data.meshes.new('Continuous front recess');mesh.from_pydata(vertices,[],faces);mesh.update()
-    o=bpy.data.objects.new('Continuous front recess',mesh);scene.collection.objects.link(o);register(o,'Continuous front recess','Deep black')
-    for face in mesh.polygons:face.use_smooth=True
+    o=bpy.data.objects.new('Continuous front recess',mesh);scene.collection.objects.link(o);register(o,'Continuous front recess','Optical barrel flocking')
+    uv=mesh.uv_layers.new(name='OpticalRecess');o['preserve_uv']=True
+    for i,face in enumerate(mesh.polygons):
+        face.use_smooth=True
+        for loop,coord in zip(face.loop_indices,[(i/segments,0),((i+1)/segments,0),((i+1)/segments,1),(i/segments,1)]):uv.data[loop].uv=coord
     ring('Front element retaining lip',.542,.302,.278,.025,'Anodized black')
     optical_element('Optical front element',.530,.278,.022,.025)
     optical_element('Optical inner element',.375,.257,.017,.022,'Inner optical glass')
@@ -1059,8 +1247,8 @@ def fifty_prime():
         mesh=bpy.data.meshes.new('Five blade iris');mesh.from_pydata(pts,[],[(0,1,2,3)])
         o=bpy.data.objects.new('Five blade iris',mesh);scene.collection.objects.link(o);register(o,'Iris blade','Anodized black')
     optical_element('Optical rear element',.16,.24,.017,.021)
-    arc_text('CANON LENS EF 50mm 1:1.8 II',.751,.578,.047,start=2.0,span=2.9)
-    arc_text('CANON INC.   Ø52mm',.751,.578,.034,start=-pi*.73,span=1.45)
+    arc_text('CANON LENS EF 50mm 1:1.8 II',.751,.578,.078,start=2.0)
+    arc_text('CANON INC.   Ø52mm',.751,.578,.060,start=-pi*.73)
     # Bend both printed legends and the compact AF/MF recess onto the shell.
     detail_start=len(OBJECTS)
     box('AF MF recess',(0,0,0),(.235,.23,.012),'Deep black',.018)
@@ -1170,14 +1358,18 @@ def lens(which):
     ring('Interior flocking',l*.5,r*.794,r*.78,l-.25,'Deep black')
     if white:
         for z,width in ([(l*.37,l*.26),(l*.76,l*.22)] if which=='70-200-f4' else [(l*.37,l*.16),(l*.76,l*.16)]):
-            ring('Rubber ring',z,r*.997,r*.89,width,'Focus rubber');radial_ribs('Molded longitudinal grip ribs',z,r*.997,width*.92,144)
+            grip_mat='Telephoto grip rubber' if which=='70-200-f4' else 'Focus rubber'
+            ring('Rubber ring',z,r*.997,r*.89,width,grip_mat)
+            radial_ribs('Molded longitudinal grip ribs',z,r*.997,width*.96,120 if which=='70-200-f4' else 144,mat=grip_mat,segments=(3 if z>l*.5 else 2) if which=='70-200-f4' else 1)
         ring('L-series red ring',l*.92,r*.992,r*.94,.034,'Red lacquer')
-        collar_z=l*(.18 if which=='70-200-f4' else .22)
-        ring('Tripod collar',collar_z,r*1.015,r*.96,.16,paint)
-        box('Collar stem',(0,-r-.19,collar_z),(.25,.36,.26),paint,.045)
-        box('Tripod foot',(0,-r-.39,collar_z+l*.05),(.46,.095,.71),paint,.04)
-        box('Tripod foot rubber',(0,-r-.444,collar_z+l*.05),(.32,.01,.54),'Deep black',.015)
-        knob=cyl('Collar locking knob',(-r-.10,0,collar_z),.11,.20,paint,'x',64,.009)
+        # The owned f/4 lens is used without a tripod collar or foot.
+        if which=='70-200-f28':
+            collar_z=l*.22
+            ring('Tripod collar',collar_z,r*1.015,r*.96,.16,paint)
+            box('Collar stem',(0,-r-.19,collar_z),(.25,.36,.26),paint,.045)
+            box('Tripod foot',(0,-r-.39,collar_z+l*.05),(.46,.095,.71),paint,.04)
+            box('Tripod foot rubber',(0,-r-.444,collar_z+l*.05),(.32,.01,.54),'Deep black',.015)
+            knob=cyl('Collar locking knob',(-r-.10,0,collar_z),.11,.20,paint,'x',64,.009)
     else:
         zoom=(l*.73,l*.29) if which=='28-135' else (l*.58,l*.32)
         ring('Broad zoom grip',zoom[0],r,r*.9,zoom[1],'Focus rubber')
@@ -1228,14 +1420,24 @@ def lens(which):
         OBJECTS.remove(cutter);bpy.data.objects.remove(cutter,do_unlink=True)
     startSwitch=len(OBJECTS)
     f4=which=='70-200-f4'
-    box('AF IS switch panel',(0,0,0 if white else -.011),(.40,1.40,.026) if white else (.345,.87,.026),'White enamel' if white else 'Graphite polymer',.027)
+    switch_panel=box('AF IS switch panel',(0,0,0 if white else -.011),(.40,1.40,.026) if white else (.345,.87,.026),'White enamel' if white else 'Graphite polymer',.027)
     items=[('AF  MF',.25),('STABILIZER\nON  OFF',-.13)] if which not in ['50','35'] else [('AF  MF',0)]
     if white:items=[('1.2m-∞  3m-∞' if f4 else '1.4m-∞  2.5m-∞',.49),('AF  MF',.16),('STABILIZER\nON  OFF',-.16),('STABILIZER MODE\n1   2',-.51)]
     for label_,y in items:
         text('Switch legend',label_,(0,y+.084,.018 if white else .008),.033 if white else .041,'Deep black' if white else 'White ink')
-        box('Switch slot',(0,y-.007,.025 if white else .011),(.16,.043,.024) if white else (.235,.103,.018),'Deep black',.013 if white else .040)
-        box('Switch slider',(-.043,y-.007,.045 if white else .027),(.061,.041,.020) if white else (.103,.075,.020),'White enamel' if white else 'Graphite polymer',.007 if white else .023)
-        for j in range(3):box('Slider knurl',(-.060+j*.016,y-.007,.058 if white else .039),(.005,.028,.004),'White enamel' if white else 'Graphite polymer',.001)
+        if f4:
+            cutter=box('Switch opening cutter',(0,y-.007,0),(.25,.13,.08),None,.020)
+            cut=switch_panel.modifiers.new('Recessed switch opening','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter;apply(switch_panel,cut)
+            OBJECTS.remove(cutter);bpy.data.objects.remove(cutter,do_unlink=True)
+            box('Switch recess floor',(0,y-.007,.009),(.248,.128,.001),'Deep black',.0004)
+            box('Switch slider',(-.035,y-.007,.012),(.175,.116,.010),'White enamel',.004)
+            for dx in [-.074,-.055,.019,.038]:
+                box('Slider grip ridge',(dx,y-.007,.018),(.005,.097,.002),'White enamel',.001)
+            box('Slider position mark',(-.016,y+.012,.0175),(.008,.065,.001),'Deep black',.0004)
+        else:
+            box('Switch slot',(0,y-.007,.025 if white else .011),(.16,.043,.024) if white else (.235,.103,.018),'Deep black',.013 if white else .040)
+            box('Switch slider',(-.043,y-.007,.045 if white else .027),(.061,.041,.020) if white else (.103,.075,.020),'White enamel' if white else 'Graphite polymer',.007 if white else .023)
+            for j in range(3):box('Slider knurl',(-.060+j*.016,y-.007,.058 if white else .039),(.005,.028,.004),'White enamel' if white else 'Graphite polymer',.001)
     if not white:
         box('AF IS slider position mark',(-.043,-.137,.040),(.008,.043,.003),'White ink',.001)
         screw((0,-.373,.007),r=.026)
@@ -1261,11 +1463,22 @@ def lens(which):
             x,y,z=v.co;radius=(r*.97 if z>=.265 else r*.82)+.002;length=math.hypot(x,y)
             v.co.x=x/length*radius;v.co.y=y/length*radius
     # Internal baffles recede toward the iris; glass elements have curved surfaces.
-    ring('Front rim',l-.032,r,r*.845,.10,'Anodized black')
-    ring('Front printed ring',l+.009,r*.958,r*.801,.016,'Graphite polymer')
+    ring('Front rim',l-.032,r,r*(.958 if which in ['28-135','70-200-f4'] else .845),.10,'Anodized black')
+    if which=='70-200-f4':
+        face=ring('Filter rim recessed face',l-.005,r*.956,r*.845,.012,'Anodized black')
+        # Two opposing tool slots interrupt the retaining face in the reference.
+        for a in [pi*.32,pi*1.32]:
+            cutter=box('Retaining ring slot cutter',(r*.899*cos(a),r*.899*sin(a),l+.002),(.044,.016,.016),None,.001)
+            cutter.rotation_euler.z=a
+            cut=face.modifiers.new('Recessed retaining ring slot','BOOLEAN');cut.operation='DIFFERENCE';cut.solver='EXACT';cut.object=cutter;apply(face,cut)
+            OBJECTS.remove(cutter);bpy.data.objects.remove(cutter,do_unlink=True)
+        for j in range(5):
+            rr=r*(.936-j*.015)
+            ring('Fine retaining face groove',l+.0015,rr,rr-.0018,.001,'Optical barrel flocking',segments=192)
+    else:ring('Front printed ring',l+.009,r*.958,r*.801,.016,'Graphite polymer')
     if white:ring('Front internal black sleeve',l-.058,r*.842,r*.778,.144,'Anodized black')
     for j in range(8):ring('Filter thread',l-.03-j*.008,r*.846,r*.825,.004,'Anodized black')
-    for j in range(0 if which=='28-135' else 3):ring('Optical light baffle',l-.15-j*.13,r*(.80-j*.07),r*(.787-j*.07),.009,'Deep black')
+    for j in range(0 if which=='28-135' else 3):ring('Optical light baffle',l-.15-j*.13,r*(.80-j*.07),r*(.787-j*.07),.009,'Optical barrel flocking' if which=='70-200-f4' else 'Deep black')
     if which=='28-135':
         # The reference shows fine annular cuts in a shallow black recess.
         # Cut them into one surface so the grooves do not become stacked rings.
@@ -1274,9 +1487,11 @@ def lens(which):
             t=row/rows;rr=r*(.801-.396*t)
             # Narrow V cuts separated by broad flat lands, not a sinusoidal
             # corrugation across the entire conical face.
+            # Grooves occupy the outer portion; the inner shoulder flattens
+            # into the bore instead of continuing as a uniformly ribbed cone.
             phase=(t*10)%1
-            groove=.0035*max(0,1-abs(phase-.5)/.16)
-            zz=l-.215-.140*t-groove
+            groove=.0035*max(0,1-abs(phase-.5)/.16) if t<.70 else 0
+            zz=l-.215-.140*(2*t-t*t)-groove
             verts.extend((rr*cos(i*2*pi/n),rr*sin(i*2*pi/n),zz) for i in range(n))
         for row in range(rows):
             for i in range(n):
@@ -1330,11 +1545,20 @@ def lens(which):
     else:optical_element('Optical front element',l-.085,r*.799,.026,.038)
     optical_element('Optical inner element',l-.43 if which=='28-135' else l*.87,r*(.407 if which=='28-135' else .74),.055 if which=='28-135' else .021,.029,'Inner optical glass')
     if white:optical_element('Optical middle element',l*.58,r*.43,.014,.03,'Inner optical glass')
-    optical_element('Optical rear element',l-.68 if which=='28-135' else l*.13,r*(.32 if which=='28-135' else .38),.055 if which=='28-135' else .019,.032,'Inner optical glass')
+    optical_element('Optical rear element',l-.68 if which=='28-135' else l*.13,r*(.32 if which=='28-135' else .38),.055 if which=='28-135' else .019,.032,'Inner optical glass rear' if which=='28-135' else 'Inner optical glass')
     if which=='28-135':
-        arc_text('CANON ZOOM LENS EF 28-135mm 1:3.5-5.6 IS',l+.021,r*.89,.062,start=.30,span=3.85)
-        arc_text('CANON INC.',l+.021,r*.89,.059,start=pi*1.05,span=.69)
-        arc_text('Ø72mm',l+.021,r*.89,.065,start=pi*.60,span=.30)
+        arc_text('CANON ZOOM LENS EF 28-135mm 1:3.5-5.6 IS',l+.0175,r*.89,.080,start=.30)
+        arc_text('CANON INC.',l+.0175,r*.89,.077,start=pi*1.05)
+        arc_text('Ø72mm',l+.0175,r*.89,.080)
+    elif which=='70-200-f4':
+        # The f/4 name is printed around the white barrel, not on the front face.
+        for label,angle in [('CANON ZOOM LENS EF 70-200mm 1:4 L IS USM',pi),('Ø67mm',0)]:
+            o=text('Front barrel inscription',label,(0,0,0),.080,'Deep black')
+            active(o);bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
+            for v in o.data.vertices:
+                u,vv,d=v.co;aa=angle+u/(r*.97);rr=r*.97+.001+d
+                v.co=(rr*cos(aa),rr*sin(aa),l*.893+vv)
+            o.data.update()
     else:
         arc_text(('CANON ZOOM LENS EF ' if which not in ['35','50'] else 'TAMRON SP ' if which=='35' else 'CANON LENS EF ')+range_+' '+aperture,l+.021,r*.889,.049 if white else .046)
         arc_text('LENS MADE IN JAPAN   Ø'+str(thread)+'mm',l+.021,r*.886,.035,start=-pi*.91,span=pi*.82)
@@ -1648,7 +1872,7 @@ def bake_occlusion(name,objects):
     for o in objects:o.select_set(True)
     bpy.context.view_layer.objects.active=objects[0];bpy.ops.object.join()
     obj=bpy.context.object;obj.name=name+' | baked assembly'
-    obj.data.uv_layers.new(name='BakedAO');obj.data.uv_layers.active_index=1
+    obj.data.uv_layers.new(name='BakedAO');obj.data.uv_layers.active_index=len(obj.data.uv_layers)-1
     bpy.ops.object.mode_set(mode='EDIT');bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.uv.smart_project(angle_limit=1.0,island_margin=.006);bpy.ops.object.mode_set(mode='OBJECT')
     ao_image=bpy.data.images.new(name+'-occlusion',width=2048,height=2048,alpha=False)

@@ -84,7 +84,9 @@ export async function loadModelLibrary(initialIds: string[]) {
                   ) {
                     value.wrapS = value.wrapT = THREE.RepeatWrapping;
                     const grain = material.name.includes("Scanned grip rubber")
-                      ? 1.25
+                      ? id === "r7"
+                        ? 0.9
+                        : 1.25
                       : material.name.includes("Crinkle painted metal")
                         ? 6
                         : material.name.includes("Pebbled rubber")
@@ -100,7 +102,9 @@ export async function loadModelLibrary(initialIds: string[]) {
               )
                 material.normalScale.multiplyScalar(
                   /Pebbled rubber|Scanned grip rubber/.test(material.name)
-                    ? 0.35
+                    ? id === "r7"
+                      ? 0.65
+                      : 0.35
                     : 0.6,
                 );
               if (
@@ -136,13 +140,19 @@ export async function loadModelLibrary(initialIds: string[]) {
                 if (inner) {
                   material.color.setRGB(0.75, 0.34, 0.12);
                   material.iridescence = 0.35;
-                  if (id === "28-135") {
+                  if (id === "28-135" || id === "70-200-f4") {
                     // Add only the dielectric coating reflection. Black removes
                     // diffuse shading; the opaque optical chamber stays visible.
                     material.color.setRGB(0, 0, 0);
+                    material.metalness = 0;
                     material.iridescence = 1;
-                    material.ior = 1.52;
-                    material.iridescenceThicknessRange = [280, 300];
+                    material.ior = material.name.includes("rear") ? 1.60 : 1.52;
+                    material.opacity = id === "70-200-f4"
+                      ? 0.6
+                      : material.name.includes("rear") ? 0.4 : 1;
+                    material.iridescenceThicknessRange = material.name.includes("rear")
+                      ? [350, 370]
+                      : [220, 240];
                   }
                   material.blending = THREE.AdditiveBlending;
                 } else material.color.setRGB(0.96, 0.98, 0.97);
