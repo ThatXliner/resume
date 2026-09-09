@@ -9,13 +9,22 @@ const instruments = [
 ---
 <section class="notebook-section music" id="music" aria-labelledby="music-title">
   <div class="notebook-heading"><p class="hand-note">there’s usually music involved.</p><h2 id="music-title">Away from<br/><em>the screen…</em></h2>
-    <PlayableTrombone />
     <p class="section-intro">I’m also a pianist and trombonist. I perform solo, play in concert and jazz bands, and release music.</p>
     <div class="section-links"><a href="https://open.spotify.com/artist/3CfXIgxCs9Sv7eVgZzqSEj"><Icon name="simple-icons:spotify" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Listen on Spotify ↗</a><a href="https://music.apple.com/us/artist/bryan-hu/1751789628"><Icon name="simple-icons:applemusic" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Apple Music ↗</a></div>
+    <div class="music-playground"><h3>Try the trombone</h3><PlayableTrombone /></div>
   </div>
   <div class="instrument-notes">{instruments.map(instrument=><article><div class="instrument-heading"><h3>{instrument.name}</h3><span>{year-instrument.since} years</span></div><p class="role-label">{instrument.role} · since {instrument.since}</p><ul>{instrument.awards.map(award=><li>{award}</li>)}</ul></article>)}</div>
 </section>
 
 <style>
+.music .section-intro { margin-top:24px; max-width:40ch; font-size:16px; line-height:1.75; }
+.music .section-links { margin-top:20px; gap:14px 24px; }
+.music-playground { margin-top:36px; padding-top:24px; border-top:1px solid #17203626; max-width:430px; }
+.music-playground h3 { font:24px var(--font-sketch); margin:0 0 8px; }
+.music-playground :global(.playable-trombone) { width:100%; margin-top:0; }
+.music-playground :global(.instrument-panel) { margin-top:6px; }
+.music-playground :global(small) { margin-top:6px; font-size:11px; line-height:1.6; }
+@media(max-width:760px) { .music .section-intro { font-size:15px; } .music-playground { margin-top:28px; } }
+
 .section-links a { display:inline-flex; align-items:center; gap:10px; }
 </style>

@@ -112,7 +112,7 @@ export async function initResumeFilm() {
     toggle.hidden = true;
     return;
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
@@ -526,9 +526,12 @@ export async function initResumeFilm() {
     galleryControl.hidden = staticMode || current < 4.02 || current > 4.42;
     if (galleryControl.hidden) drag = undefined;
     galleryCamera.updateProjectionMatrix();
-    renderer.setRenderTarget(galleryTarget);
-    renderer.render(galleryScene, galleryCamera);
-    renderer.setRenderTarget(null);
+    // The offscreen room is only visible through the rear LCD during this transition.
+    if (!staticMode && current > 3.15 && current < 4.02) {
+      renderer.setRenderTarget(galleryTarget);
+      renderer.render(galleryScene, galleryCamera);
+      renderer.setRenderTarget(null);
+    }
     laptop.visible = current < 1.95;
     if (screen && projectTexture) {
       const material = screen.material as THREE.MeshBasicMaterial;
@@ -604,7 +607,7 @@ export async function initResumeFilm() {
         ? "none"
         : `translate(${(i - 1) * (1 - enter) * 180}px,${(1 - enter) * 60}px)`;
     });
-    renderer.render(
+    if (Number(canvas.style.opacity) > 0) renderer.render(
       current >= 4.02 && !staticMode ? galleryScene : scene,
       current >= 4.02 && !staticMode ? galleryCamera : camera,
     );
@@ -617,7 +620,7 @@ export async function initResumeFilm() {
       schedule();
   }
   function schedule() {
-    if (!frame && !disposed) frame = requestAnimationFrame(draw);
+    if (!frame && !disposed && !document.hidden) frame = requestAnimationFrame(draw);
   }
   function onScroll() {
     target = locate();

@@ -46,5 +46,16 @@ import '../styles/resume-film.css';
     <button class="motion-toggle" type="button" aria-pressed="false">Motion on</button>
   </div>
   <noscript><style>.film-status, .motion-toggle { display: none !important; }</style></noscript>
-  <script>import { initResumeFilm } from '../lib/resume-film'; initResumeFilm();</script>
+  <script>
+    // Let content and lightweight controls paint before importing the 3D engine.
+    const start = () => {
+      const load = () => import('../lib/resume-film').then(({ initResumeFilm }) => initResumeFilm()).catch(() => {
+        const status = document.querySelector<HTMLElement>('.film-status');
+        if (status) status.hidden = true;
+      });
+      if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 2000 });
+      else setTimeout(load, 200);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(start));
+  </script>
 </Layout>
