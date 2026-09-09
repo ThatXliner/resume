@@ -1,0 +1,69 @@
+---
+import SketchMarquee from './SketchMarquee.astro';
+import { projects } from '../data/projects';
+import { getAllRepositories, getForkedRepositories, getGitHubStats } from '../lib/github';
+import { resume } from '../data/resume';
+const [repositories, forks, stats] = await Promise.all([getAllRepositories(), getForkedRepositories(), getGitHubStats()]);
+const publicRepos = repositories.filter(repo => repo.isPublic);
+const stars = publicRepos.reduce((sum, repo) => sum + repo.starCount, 0);
+const upstream = forks.filter(repo => repo.isPublic);
+const upstreamSearch = 'https://github.com/search?q=author%3AThatXliner+is%3Apr+is%3Amerged&type=pullrequests';
+---
+<section class="notebook-section open-source" id="open-source" aria-labelledby="source-title">
+  <div class="notebook-heading">
+    <p class="hand-note">software is better when it’s shared.</p>
+    <h2 id="source-title">Built for me.<br/><em>Useful to others.</em></h2>
+    <p class="section-intro">I publish Python libraries and developer tools, maintain them in public, and contribute fixes to projects I use.</p>
+    <SketchMarquee repositories={publicRepos} />
+  </div>
+  <div class="source-evidence">
+    <dl class="impact-numbers">
+      <div><dt>Stars on my public work</dt><dd><svg class="impact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 2.9 6.2 6.8.8-5 4.7 1.3 6.8-6-3.3-6.1 3.2 1.3-6.7-5-4.7 6.9-.9Z"/></svg><span>{stars.toLocaleString('en-US')}</span></dd></div>
+      <div><dt>Contributions in the past year</dt><dd><svg class="impact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h5m10 0h5M8 9.5 11.8 7l4.2 2.4v5.1L12 17l-4-2.6Z"/></svg><span>{stats.totalContributions.toLocaleString('en-US')}</span></dd></div>
+      <div><dt>Upstream projects with merged PRs</dt><dd><svg class="impact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="5" r="2"/><path d="m6 6 .1 12M18 7c0 6-11.8 3.2-11.8 8M14 11l-3-1 1-3"/></svg><span>{upstream.length}</span></dd></div>
+    </dl>
+    <p class="data-note">GitHub snapshot at build time. Upstream count covers projects tracked by my current forks.</p>
+    <div class="source-projects">
+      {projects.map(project => <article class="source-project">
+        <div class="source-project-heading"><h3><a href={project.url}>{project.name} <span aria-hidden="true">↗</span></a></h3><span>{publicRepos.find(repo=>repo.name===project.repoName)?.starCount ?? '—'} stars</span></div>
+        <p>{project.description.replace(/\*\*(.*?)\*\*/g, '$1')}</p>
+      </article>)}
+    </div>
+    <div class="section-links"><a href="/thelist">All my projects ↗</a><a href={upstreamSearch}>Merged contributions ↗</a></div>
+  </div>
+</section>
+<section class="notebook-section community" id="community" aria-labelledby="community-title">
+  <div class="notebook-heading"><p class="hand-note">and sometimes, building the team.</p><h2 id="community-title">Code is only<br/><em>part of it.</em></h2>
+    <svg class="community-drawing" viewBox="0 0 310 165" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M40 31c-20-4-26 31-7 35 25 7 30-31 7-35Zm-4 37-1 41m0-32-20 21m21-20 24 16m-25 15-16 30m17-30 17 31M269 27c-19-2-25 28-7 33 25 8 31-30 7-33Zm-5 36-1 43m0-26-26 18m27-22 23 24m-24 6-17 33m17-32 19 29M125 77l62-2 6 40-74 1zM107 124l99-2m-59-35-10 10 11 8m18-18 10 8-10 9M64 69q42-54 66-17m-6-13 7 14-16-1M229 69q-28-31-40-15m0-11-1 12 13-3"/></g><text x="106" y="158" fill="currentColor" font-family="var(--font-sketch)" font-size="20">better together</text></svg>
+  </div>
+  <div class="community-roles">{resume.contributions.map(role=><article><p class="role-label">{role.role}</p><h3><a href={role.url}>{role.name} ↗</a></h3><p>{role.description}</p></article>)}</div>
+</section>
+
+<script>
+  const stats = document.querySelector<HTMLElement>('.impact-numbers');
+  if (stats) {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+    const numbers = [...stats.querySelectorAll<HTMLElement>('dd > span')].map(element => ({element, value:Number(element.textContent?.replaceAll(',', '')), label:element.textContent || ''}));
+    // Keep the complete values available to assistive technology throughout the count.
+    numbers.forEach(({element,label}) => {
+      element.parentElement!.setAttribute('aria-label', label);
+      element.setAttribute('aria-hidden','true');
+    });
+    let frame = 0;
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      observer.disconnect();
+      if (reduced.matches || document.querySelector('.film[data-static]')) return;
+      const start = performance.now();
+      const tick = (now:number) => {
+        const progress = reduced.matches || document.querySelector('.film[data-static]') ? 1 : Math.min((now-start)/1100,1);
+        const eased = 1-Math.pow(1-progress,3);
+        numbers.forEach(({element,value,label}) => { element.textContent = progress === 1 ? label : Math.round(value*eased).toLocaleString('en-US'); });
+        if (progress < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }, {threshold:.6});
+    observer.observe(stats);
+    document.addEventListener('astro:before-swap', () => {observer.disconnect(); cancelAnimationFrame(frame);}, {once:true});
+  }
+</script>

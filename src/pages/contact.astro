@@ -1,0 +1,34 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import { Icon } from "astro-icon/components";
+---
+
+<Layout title="Contact Me — Bryan Hu" description="Get in touch with Bryan Hu about projects, collaborations, or opportunities.">
+    <Nav />
+    <main class="contact-page">
+        <h1>Contact <span>me.</span></h1>
+        <p>Have a project in mind, an opportunity to share, or just want to say hello?</p>
+        <a class="email" href="mailto:thatxliner@gmail.com"><Icon name="lucide:mail" />thatxliner@gmail.com</a>
+        <div class="contact-links">
+            <a href="https://github.com/ThatXliner"><Icon name="simple-icons:github" />GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://www.linkedin.com/in/thatxliner/"><Icon name="simple-icons:linkedin" />LinkedIn <span aria-hidden="true">↗</span></a>
+            <a href="/resume.pdf" download="BryanHu_Resume.pdf"><Icon name="lucide:download" />Résumé PDF</a>
+        </div>
+    </main>
+    <Footer />
+</Layout>
+
+<style>
+    .contact-page { max-width: 1180px; margin: auto; padding: clamp(160px, 22vh, 240px) 7% 100px; min-height: calc(100svh - 90px); }
+    h1 { font: clamp(64px, 9vw, 120px)/1.1 var(--font-sketch); }
+    h1 span { color: #3473ff; }
+    p { max-width: 44ch; margin: 28px 0 40px; font-size: clamp(18px, 2vw, 24px); line-height: 1.7; color: #515b6e; }
+    a { display: inline-flex; align-items: center; gap: 12px; font: 26px var(--font-sketch); text-underline-offset: 7px; }
+    a:hover { text-decoration: underline; }
+    a:focus-visible { outline: 2px solid #3473ff; outline-offset: 6px; }
+    .email { color: #3473ff; font-size: clamp(23px, 3.5vw, 38px); border-bottom: 2px solid; padding-bottom: 8px; }
+    a :global(svg) { width: 24px; height: 24px; flex-shrink: 0; }
+    .contact-links { display: flex; flex-wrap: wrap; gap: 24px 36px; margin-top: 38px; }
+</style>
