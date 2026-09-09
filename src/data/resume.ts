@@ -15,7 +15,7 @@ export const resume = {
 
   awards: [
     {
-      label: "USACO Silver — passed Bronze in 2023",
+      label: "USACO Silver",
       description: "USA Computing Olympiad, competitive algorithmic programming",
       url: "https://usaco.org/",
     },
@@ -30,37 +30,30 @@ export const resume = {
     {
       label: "Creativity Award — Daly Division (Champs)",
       year: 2025,
-      url: "https://www.thebluealliance.com/event/2025dal#awards",
     },
     {
       label: "Excellence in Engineering — Contra Costa Regional",
       year: 2025,
-      url: "https://www.thebluealliance.com/event/2025capt#awards",
     },
     {
       label: "Innovation in Control — Ventura County Regional",
       year: 2025,
-      url: "https://www.thebluealliance.com/event/2025cave#awards",
     },
     {
       label: "Engineering Inspiration — San Francisco Regional",
       year: 2025,
-      url: "https://www.thebluealliance.com/event/2025casf#awards",
     },
     {
       label: "Judges' Award — Capital City Classic",
       year: 2025,
-      url: "https://www.thebluealliance.com/event/2025cacc#awards",
     },
     {
       label: "Regional Finalists — Silicon Valley Regional",
       year: 2024,
-      url: "https://www.thebluealliance.com/event/2024casj#awards",
     },
     {
       label: "Engineering Inspiration — Arizona Valley Regional",
       year: 2024,
-      url: "https://www.thebluealliance.com/event/2024azva#awards",
     },
   ],
 
@@ -152,7 +145,7 @@ export const resume = {
       name: "VC Assist",
       role: "CEO",
       description:
-        "Joined in eighth grade and later became CEO of the student-run non-profit enhancing digital educational infrastructure at Valley Christian Schools. Built and maintained the full-stack platform (frontend, backend, web scrapers); later led a full frontend rewrite to improve performance and UX.",
+        "Student-run non-profit enhancing digital educational infrastructure at Valley Christian Schools. Built and maintained the full-stack platform (frontend, backend, web scrapers); later led a full frontend rewrite to improve performance and UX.",
       url: "https://vcassist.org",
       learned: "Non-profit leadership, full-stack architecture, web scraping at scale, frontend performance",
       whatIDid: "Built the original full-stack platform including frontend, backend, and web scrapers; later led a complete frontend rewrite",

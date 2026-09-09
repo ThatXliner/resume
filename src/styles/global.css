@@ -6,22 +6,22 @@
 
 @theme {
     /* Planes. The page is true black; surfaces lift off it in small steps. */
-    --color-void: #fffefb;
-    --color-surface: #f3f5fd;
-    --color-surface-2: #edf2ff;
-    --color-surface-3: #dce6ff;
+    --color-void: #000000;
+    --color-surface: #0a0a0c;
+    --color-surface-2: #141417;
+    --color-surface-3: #1d1d21;
 
     /* Type. Three densities, matched to how far down the hierarchy you are. */
-    --color-fg: #172036;
-    --color-fg-muted: #515b6e;
-    --color-fg-dim: #626b7c;
+    --color-fg: #f5f5f7;
+    --color-fg-muted: #8a8a90;
+    --color-fg-dim: #636369;
 
     /* Hairlines do the work that borders used to. */
-    --color-hairline: #17203626;
-    --color-hairline-strong: #17203650;
+    --color-hairline: #ffffff17;
+    --color-hairline-strong: #ffffff2b;
 
     /* Exactly one accent, and it is reserved for interactive text. */
-    --color-accent: #3473ff;
+    --color-accent: #4d9fff;
 
     --font-sans: var(--font-sans);
 

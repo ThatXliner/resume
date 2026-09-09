@@ -1,9 +1,109 @@
 ---
-const links=[['Projects','/thelist'],['Photos','/photography'],['Résumé','/resume.pdf'],['Contact','/contact']];
+import { FEATURES } from "@/flags";
+
+// Section links are page-absolute (`/#work`) so the same nav works from
+// /thelist as well as the home page. On the home page these still resolve as
+// same-document fragment navigation, so nothing reloads.
+const links = [
+    { label: "Building", href: "/#building", section: "building" },
+    // Matches every /thelist category, so all four tabs light the nav.
+    { label: "The List", href: "/thelist", pathPrefix: "/thelist" },
+    // Appears only when the section is built — a link to a page that doesn't
+    // exist in dist would be a 404 in production.
+    ...(FEATURES.art
+        ? [{ label: "Art", href: "/art", pathPrefix: "/art" }]
+        : []),
+    { label: "Work", href: "/#work", section: "work" },
+    { label: "Story", href: "/#story", section: "story", minWidth: "md" },
+];
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
-<header class="site-nav"><a class="site-wordmark" href="/"><img src="/profile.png" width="34" height="34" alt=""/>Bryan Hu</a><nav aria-label="Main navigation">{links.map(([label,href])=><a href={href} aria-current={Astro.url.pathname.replace(/\/$/,'')===href?'page':undefined}>{label}</a>)}</nav></header>
-<style>
-.site-nav{position:fixed;inset:0 0 auto;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:102px;padding:20px 4%;background:#fffefbf5;border-bottom:1px solid #17203620;color:#172036;}
-.site-wordmark{display:flex;align-items:center;gap:10px;font:26px var(--font-sketch);}.site-wordmark img{border:1px solid #172036;border-radius:6px;}nav{display:flex;gap:26px;font:19px var(--font-sketch);}nav a{white-space:nowrap;}nav a:hover,nav a[aria-current]{color:#3473ff;text-decoration:underline;text-underline-offset:5px;}
-@media(max-width:760px){.site-nav{align-items:flex-start;flex-direction:column;gap:10px;padding:14px 7%;}.site-wordmark{font-size:23px;}.site-wordmark img{width:28px;height:28px;}nav{gap:8px;font-size:15px;width:100%;justify-content:space-between;}}
-</style>
+
+<header
+    id="nav"
+    class="fixed top-0 z-50 w-full border-b border-transparent transition-colors duration-300 data-[scrolled]:border-hairline data-[scrolled]:bg-void/72 data-[scrolled]:backdrop-blur-xl"
+>
+    <div
+        class="mx-auto flex h-12 max-w-[1180px] items-center justify-between px-gutter"
+    >
+        <a
+            href="/"
+            class="text-[0.9375rem] font-semibold tracking-[-0.015em] transition-opacity hover:opacity-70"
+            >Bryan Hu</a
+        >
+
+        <nav class="flex items-center gap-5 sm:gap-7">
+            {
+                links.map((link) => (
+                    <a
+                        href={link.href}
+                        data-section={link.section}
+                        data-active={
+                            link.pathPrefix && path.startsWith(link.pathPrefix)
+                                ? ""
+                                : undefined
+                        }
+                        class:list={[
+                            "text-[0.8125rem] text-fg-muted transition-colors hover:text-fg data-[active]:text-fg",
+                            link.minWidth === "md" && "hidden md:inline",
+                        ]}
+                    >
+                        {link.label}
+                    </a>
+                ))
+            }
+            <a
+                href="/#contact"
+                class="text-[0.8125rem] text-accent transition-opacity hover:opacity-70"
+                >Contact</a
+            >
+        </nav>
+    </div>
+</header>
+
+<script>
+    // Two tiny behaviours, no framework: the bar materializes once you leave
+    // the hero, and the current section's link brightens.
+    const nav = document.getElementById("nav");
+
+    const onScroll = () => {
+        if (window.scrollY > 24) nav?.setAttribute("data-scrolled", "");
+        else nav?.removeAttribute("data-scrolled");
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Section highlighting only applies on pages that actually contain the
+    // sections; elsewhere (e.g. /apps) the server-rendered active state stands.
+    const sectionLinks = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-section]"),
+    );
+    const observed = sectionLinks
+        .map((link) => ({
+            link,
+            el: document.getElementById(link.dataset.section!),
+        }))
+        .filter((pair): pair is { link: HTMLElement; el: HTMLElement } =>
+            Boolean(pair.el),
+        );
+
+    if (observed.length > 0) {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (!entry.isIntersecting) continue;
+                    for (const pair of observed) {
+                        if (pair.el === entry.target) {
+                            pair.link.setAttribute("data-active", "");
+                        } else {
+                            pair.link.removeAttribute("data-active");
+                        }
+                    }
+                }
+            },
+            { rootMargin: "-40% 0px -55% 0px" },
+        );
+        observed.forEach((pair) => observer.observe(pair.el));
+    }
+</script>
