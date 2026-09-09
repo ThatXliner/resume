@@ -1,0 +1,14 @@
+---
+import MadeListPage from "@/classic/components/MadeListPage.astro";
+import { libraries } from "@/classic/data/libraries";
+---
+
+<MadeListPage
+    active="libraries"
+    items={libraries}
+    title="The List — Libraries by Bryan Hu"
+    description="Open-source libraries by Bryan Hu for Python, TypeScript, and more: published packages you can import and build with."
+    intro="The reusable bits: packages you import when the thing you need should be a building block, not another app. Published, documented, and open source."
+    nextHref="/classic/thelist/tools"
+    nextLabel="See the tools"
+/>

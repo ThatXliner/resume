@@ -1,0 +1,1 @@
+Legacy portfolio snapshot from commit c75f9b3. Pages live in src/pages/classic; components, data, scripts, and styles are isolated here. Shared assets remain in src/assets and public. Internal page links use /classic. Art remains controlled by ENABLE_ART.

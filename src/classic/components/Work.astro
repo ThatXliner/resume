@@ -1,0 +1,429 @@
+---
+import { Icon } from "astro-icon/components";
+import { projects } from "@/classic/data/projects";
+import {
+    getAllRepositories,
+    getForkedRepositories,
+    getGitHubStats,
+    getRepoStars,
+} from "@/classic/lib/github";
+
+const repositories = await getAllRepositories();
+const forks = await getForkedRepositories();
+const gh = await getGitHubStats();
+
+const totalStars = repositories.reduce((sum, repo) => sum + repo.starCount, 0);
+
+// Featured star counts come from the API too — the numbers that used to live
+// in projects.ts had already drifted behind reality.
+const featuredStars = await getRepoStars(
+    projects.map((project) => project.repoName),
+);
+
+const stats = [
+    { value: totalStars, label: "stars on my own work" },
+    { value: gh.totalContributions, label: "contributions this year" },
+    { value: gh.totalRepos, label: "repositories" },
+    { value: forks.length, label: "upstream projects fixed" },
+];
+
+// The ticker is ambient, so it only carries repos with a bit of traction.
+// `totalStars` above still counts everything, so raising this doesn't quietly
+// shrink the headline figure.
+const TICKER_MIN_STARS = 2;
+
+// Starred, but not projects: the profile README and a dotfiles dump. They pass
+// the star bar on their own and would otherwise ride along forever.
+const TICKER_DENYLIST = new Set(["ThatXliner", "dotfiles"]);
+
+const ticker = repositories.filter(
+    (repo) =>
+        repo.starCount >= TICKER_MIN_STARS && !TICKER_DENYLIST.has(repo.name),
+);
+
+// Two rows travelling in opposite directions. Split by index rather than by
+// slicing halves so both rows stay populated if the repo count is odd.
+const rowA = ticker.filter((_, i) => i % 2 === 0);
+const rowB = ticker.filter((_, i) => i % 2 === 1);
+
+// Inline markers in project descriptions: **label** or **label|url**
+function segments(text: string) {
+    return text.split(/\*\*(.*?)\*\*/g).map((part, i) => {
+        if (i % 2 === 0) return { kind: "text" as const, text: part };
+        const pipe = part.indexOf("|");
+        return pipe === -1
+            ? { kind: "strong" as const, text: part }
+            : {
+                  kind: "link" as const,
+                  text: part.slice(0, pipe),
+                  href: part.slice(pipe + 1),
+              };
+    });
+}
+---
+
+<section id="work" class="relative border-t border-hairline">
+    <div
+        class="mx-auto max-w-[1180px] px-gutter pt-24 pb-4 text-center md:pt-36"
+    >
+        <p class="t-eyebrow reveal">Open source</p>
+        <h2 class="t-title mx-auto mt-3 max-w-[26ch] text-balance">
+            <span class="mask mask-scroll"><a class="underline transition motion-safe:hover:scale-[1.05] motion-reduce:transition-none" href="https://xkcd.com/225/">For a GNU dawn!</a></span>
+        </h2>
+        <p class="t-lede reveal mx-auto mt-5 max-w-[50ch] text-balance">
+            Python libraries, developer tooling, and a long tail of pull
+            requests into other people's projects. All of it public, most of it
+            still maintained.
+        </p>
+    </div>
+
+    <!-- Live figures. Pulled fresh whenever the site is rebuilt. -->
+    <dl
+        class="mx-auto mt-16 grid max-w-[1180px] grid-cols-2 gap-y-10 px-gutter md:mt-20 md:grid-cols-4"
+    >
+        {
+            stats.map((stat) => (
+                <div class="reveal border-t border-hairline pt-5">
+                    <dd
+                        data-countup={stat.value}
+                        class="tnum text-[clamp(2.25rem,4vw,3.25rem)] leading-none font-semibold tracking-[-0.04em]"
+                    >
+                        {stat.value.toLocaleString("en-US")}
+                    </dd>
+                    <dt class="t-caption mt-2.5">{stat.label}</dt>
+                </div>
+            ))
+        }
+    </dl>
+
+    <!-- ══ Repository ticker ════════════════════════════════════════════ -->
+    <div class="repository-marquee relative mt-20 md:mt-28" data-repository-marquee>
+        <div class="mx-auto mb-4 flex max-w-[1180px] justify-end px-gutter">
+            <button
+                type="button"
+                class="repository-toggle rounded-full border border-hairline px-4 py-2 text-sm text-fg-muted transition-colors hover:text-fg"
+                aria-controls="repository-rows"
+                hidden
+            >Pause repository scrolling</button>
+            <p class="repository-hint t-caption">Scroll or swipe to explore repositories.</p>
+        </div>
+        <div id="repository-rows" class="repository-rows relative flex flex-col gap-4">
+            {
+                [rowA, rowB].map((row, rowIndex) => (
+                    <div
+                        class="repository-row flex gap-4 [--duration:110s] [--gap:1rem]"
+                        role="region"
+                        aria-label={`Repository row ${rowIndex + 1}`}
+                        tabindex="0"
+                    >
+                        {[0, 1].map((copy) => (
+                            <div
+                                class:list={[
+                                    "repository-copy flex shrink-0 justify-around gap-4",
+                                    copy === 1 && "repository-duplicate",
+                                    rowIndex === 1 &&
+                                        "repository-reverse",
+                                ]}
+                                aria-hidden={copy === 1 ? "true" : undefined}
+                            >
+                                {row.map((repo) => (
+                                    <a
+                                        href={`https://github.com/ThatXliner/${repo.name}`}
+                                        tabindex={copy === 1 ? -1 : undefined}
+                                        aria-hidden={copy === 1 ? "true" : undefined}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="plane plane-hover flex h-[9.25rem] w-[19rem] shrink-0 flex-col p-5 text-left"
+                                    >
+                                        <div class="flex items-center gap-2">
+                                            <Icon
+                                                name="octicon:repo"
+                                                class="size-3.5 shrink-0 text-fg-dim"
+                                            />
+                                            <span class="truncate text-[0.9375rem] font-semibold">
+                                                {repo.name}
+                                            </span>
+                                        </div>
+                                        <p class="t-caption mt-2 line-clamp-2 min-h-[2.5em]">
+                                            {repo.body}
+                                        </p>
+                                        <div class="mt-auto flex items-center gap-4 pt-3">
+                                            {repo.language && (
+                                                <span class="flex items-center gap-1.5 text-[0.75rem] text-fg-dim">
+                                                    <span
+                                                        class="size-2 rounded-full"
+                                                        style={`background-color:${repo.languageColor || "#4d9fff"}`}
+                                                    />
+                                                    {repo.language}
+                                                </span>
+                                            )}
+                                            <span class="tnum flex items-center gap-1 text-[0.75rem] text-fg-dim">
+                                                <Icon
+                                                    name="octicon:star-24"
+                                                    class="size-3"
+                                                />
+                                                {repo.starCount}
+                                            </span>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                ))
+            }
+            <!-- Edges dissolve into the page instead of being clipped. -->
+            <div
+                aria-hidden="true"
+                class="repository-edge pointer-events-none absolute inset-y-0 left-0 w-16 bg-linear-to-r from-void to-transparent sm:w-32"
+            >
+            </div>
+            <div
+                aria-hidden="true"
+                class="repository-edge pointer-events-none absolute inset-y-0 right-0 w-16 bg-linear-to-l from-void to-transparent sm:w-32"
+            >
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ Featured projects ════════════════════════════════════════════ -->
+    <div class="mx-auto max-w-[1180px] px-gutter pt-24 pb-24 md:pt-32 md:pb-36">
+        <div class="text-center">
+            <p class="t-eyebrow reveal">Featured</p>
+            <h3 class="t-headline reveal mt-2.5">
+                A closer look at {projects.length} of them.
+            </h3>
+        </div>
+
+        <!-- Three across, not a two-column grid: with an odd count the last
+             card would sit alone in the left half. -->
+        <div class="mt-12 grid gap-4 md:mt-16 md:grid-cols-3">
+            {
+                projects.map((project) => (
+                    <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="card-arrive plane plane-hover group flex flex-col p-7 md:p-8"
+                    >
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <h4 class="text-[1.0625rem] font-semibold">
+                                    {project.name}
+                                </h4>
+                                <p class="t-caption mt-0.5">
+                                    {project.tagline}
+                                </p>
+                            </div>
+                            <Icon
+                                name="lucide:arrow-up-right"
+                                class="size-4 shrink-0 text-fg-dim transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5 motion-safe:group-hover:translate-x-0.5 motion-reduce:transition-none"
+                            />
+                        </div>
+
+                        <p class="t-body mt-4 text-[0.9375rem]">
+                            {segments(project.description).map((seg) =>
+                                seg.kind === "text" ? (
+                                    <span>{seg.text}</span>
+                                ) : (
+                                    <span class="font-medium text-fg">
+                                        {seg.text}
+                                    </span>
+                                ),
+                            )}
+                        </p>
+
+                        <div class="mt-auto flex items-center gap-4 pt-6">
+                            <span class="flex items-center gap-1.5 text-[0.75rem] text-fg-dim">
+                                <span
+                                    class="size-2 rounded-full"
+                                    style={`background-color:${project.languageColor}`}
+                                />
+                                {project.language}
+                            </span>
+                            {(featuredStars[project.repoName] ?? 0) > 0 && (
+                                <span class="tnum flex items-center gap-1 text-[0.75rem] text-fg-dim">
+                                    <Icon
+                                        name="octicon:star-24"
+                                        class="size-3"
+                                    />
+                                    {featuredStars[
+                                        project.repoName
+                                    ].toLocaleString("en-US")}
+                                </span>
+                            )}
+                        </div>
+                    </a>
+                ))
+            }
+        </div>
+
+        <!-- The home page shows the highlights; The List is the canonical
+             index of everything shipped. -->
+        <div
+            class="reveal mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-4"
+        >
+            <a href="/classic/thelist" class="btn btn-primary">Read more at The List</a>
+            <a
+                href="https://github.com/ThatXliner?tab=repositories"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center gap-1.5 text-[0.9375rem] text-fg-muted transition-colors hover:text-fg"
+            >
+                <Icon name="simple-icons:github" class="size-4" />
+                All repositories
+            </a>
+        </div>
+    </div>
+</section>
+
+<style>
+    .repository-row {
+        overflow-x: auto;
+        padding-block: 0.5rem;
+    }
+
+    .repository-row:focus-visible,
+    .repository-toggle:focus-visible {
+        outline: 2px solid currentColor;
+        outline-offset: -2px;
+    }
+
+    .repository-copy > a {
+        scroll-snap-align: start;
+    }
+
+    /* Without JS or after the first touch, each original card is scrollable. */
+    .repository-marquee:is(:not([data-ready]), [data-manual]) .repository-duplicate,
+    .repository-marquee:is(:not([data-ready]), [data-manual]) .repository-edge {
+        display: none;
+    }
+
+    .repository-marquee[data-ready]:not([data-manual]) .repository-hint {
+        display: none;
+    }
+
+    .repository-marquee:is(:not([data-ready]), [data-manual]) .repository-row {
+        scroll-snap-type: x proximity;
+    }
+
+    .repository-marquee[data-ready]:not([data-manual]) .repository-row {
+        overflow-x: hidden;
+    }
+
+    .repository-marquee[data-ready]:not([data-manual]) .repository-copy {
+        animation: repository-travel var(--duration) infinite linear;
+    }
+
+    .repository-marquee[data-ready]:not([data-manual]) .repository-reverse {
+        animation-direction: reverse;
+    }
+
+    .repository-marquee[data-paused] .repository-copy,
+    .repository-rows:hover .repository-copy,
+    .repository-rows:focus-within .repository-copy {
+        animation-play-state: paused !important;
+    }
+
+    @keyframes repository-travel {
+        from { transform: translateX(0); }
+        to { transform: translateX(calc(-100% - var(--gap))); }
+    }
+
+    .repository-marquee[data-manual] .repository-toggle {
+        display: none;
+    }
+
+    /* Reduced motion responds immediately when the preference changes. */
+    @media (prefers-reduced-motion: reduce) {
+        .repository-marquee[data-ready]:not([data-manual]) .repository-row {
+            overflow-x: auto;
+            scroll-snap-type: x proximity;
+        }
+
+        .repository-marquee[data-ready]:not([data-manual]) .repository-copy {
+            animation: none;
+        }
+
+        .repository-marquee .repository-duplicate,
+        .repository-marquee .repository-edge,
+        .repository-marquee .repository-toggle {
+            display: none;
+        }
+
+        .repository-marquee[data-ready]:not([data-manual]) .repository-hint {
+            display: block;
+        }
+    }
+</style>
+
+<script>
+    // Count each figure once as it enters view; keep final values as the
+    // no-JS and reduced-motion baseline.
+    const counters = [...document.querySelectorAll<HTMLElement>("[data-countup]")];
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const frames = new Map<HTMLElement, number>();
+    const finishCount = (element: HTMLElement) => {
+        const frame = frames.get(element);
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        frames.delete(element);
+        element.textContent = Number(element.dataset.countup).toLocaleString("en-US");
+    };
+    const countObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            const element = entry.target as HTMLElement;
+            countObserver.unobserve(element);
+            if (reducedMotion.matches || document.documentElement.hasAttribute("data-noanim")) {
+                finishCount(element);
+                continue;
+            }
+            const end = Number(element.dataset.countup);
+            const start = performance.now();
+            const tick = (now: number) => {
+                const progress = Math.min((now - start) / 1100, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                element.textContent = Math.round(end * eased).toLocaleString("en-US");
+                if (progress < 1) frames.set(element, requestAnimationFrame(tick));
+                else finishCount(element);
+            };
+            frames.set(element, requestAnimationFrame(tick));
+        }
+    }, { threshold: .4 });
+    counters.forEach(element => countObserver.observe(element));
+    reducedMotion.addEventListener("change", () => {
+        if (reducedMotion.matches) counters.forEach(finishCount);
+    });
+
+
+    const marquee = document.querySelector<HTMLElement>("[data-repository-marquee]");
+    const toggle = marquee?.querySelector<HTMLButtonElement>("@/components/.repository-toggle");
+
+    if (marquee && toggle) {
+        toggle.addEventListener("click", () => {
+            const paused = marquee.toggleAttribute("data-paused");
+            toggle.textContent = paused
+                ? "Resume repository scrolling"
+                : "Pause repository scrolling";
+        });
+        const rows = marquee.querySelector("@/components/.repository-rows");
+        rows?.addEventListener("focusin", (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement) || !target.matches(":focus-visible") ||
+                target.closest("@/components/.repository-duplicate")) return;
+
+            // Remove the marquee transform before bringing keyboard focus into view.
+            marquee.setAttribute("data-manual", "");
+            requestAnimationFrame(() => {
+                if (document.activeElement === target) {
+                    target.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
+                }
+            });
+        });
+        rows?.addEventListener("touchstart", () => {
+            marquee.setAttribute("data-manual", "");
+        }, { once: true, passive: true });
+        toggle.hidden = false;
+        marquee.setAttribute("data-ready", "");
+    }
+</script>

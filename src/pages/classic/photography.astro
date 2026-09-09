@@ -1,0 +1,331 @@
+---
+import { Picture, getImage } from "astro:assets";
+import Layout from "@/classic/layouts/Layout.astro";
+import Nav from "@/classic/components/Nav.astro";
+import Footer from "@/classic/components/Footer.astro";
+import { photographs } from "@/classic/data/photography";
+
+const viewerBreakpoints = [1280, 1920, 2560, 3840];
+const galleryPhotos = await Promise.all(
+    photographs.map(async (photo) => {
+        const widths = [
+            ...viewerBreakpoints.filter((width) => width < photo.image.width),
+            photo.image.width,
+        ];
+        const [avif, webp] = await Promise.all([
+            getImage({
+                src: photo.image,
+                widths,
+                sizes: "100vw",
+                format: "avif",
+                quality: "high",
+            }),
+            getImage({
+                src: photo.image,
+                widths,
+                sizes: "100vw",
+                format: "webp",
+                quality: "high",
+            }),
+        ]);
+
+        return {
+            ...photo,
+            viewerAvifSrcset: avif.srcSet.attribute,
+            viewerWebpSrcset: webp.srcSet.attribute,
+            viewerFallback:
+                webp.srcSet.values.at(-1)?.url ?? webp.src,
+        };
+    }),
+);
+---
+
+<Layout
+    title="Photography — Bryan Hu"
+    description="Selected photography by Bryan Hu: quiet light, street scenes, and the details between them."
+>
+    <Nav />
+    <main class="photography-page">
+        <section class="photo-hero relative isolate overflow-hidden">
+            <header
+                class="photo-hero-copy relative z-10 mx-auto flex min-h-[58svh] max-w-[1180px] flex-col justify-center px-gutter pt-24 pb-20 md:min-h-[64svh] md:pt-28 md:pb-24"
+            >
+                <p class="t-eyebrow rise">Selected work</p>
+                <h1 class="t-display mt-3 max-w-[13ch] text-balance">
+                    <span class="mask mask-load"><span>My</span></span>
+                    <span class="mask mask-load text-fg-muted">
+                        <span class="photography-word" style="animation-delay:110ms">
+                            Photography
+                        </span>
+                    </span>
+                </h1>
+                <p
+                    class="t-lede rise mt-7 max-w-[48ch] text-balance"
+                    style="animation-delay:220ms"
+                >
+                    Capturing the beauty of God's world, one click at a time.
+                </p>
+            </header>
+
+        </section>
+
+        <div class="gallery-surface relative z-10 -mt-px bg-void">
+        <div
+            class="mx-auto flex max-w-[1400px] flex-col gap-4 px-gutter pt-9 pb-10 sm:flex-row sm:items-center sm:justify-between md:pt-11 md:pb-12"
+        >
+            <div class="flex items-center gap-2" aria-label="Filter by camera">
+                <span class="t-caption mr-1 hidden sm:inline">Camera</span>
+                <button
+                    type="button"
+                    class="filter-pill"
+                    data-camera="Canon EOS R7"
+                    aria-pressed="false">EOS R7</button
+                >
+                <button
+                    type="button"
+                    class="filter-pill"
+                    data-camera="Canon EOS 40D"
+                    aria-pressed="false">EOS 40D</button
+                >
+            </div>
+
+            <div class="flex items-center gap-2" aria-label="Sort by date">
+                <span class="t-caption mr-1 hidden sm:inline">Date</span>
+                <button
+                    type="button"
+                    class="sort-pill"
+                    data-sort="newest"
+                    aria-pressed="true">Newest</button
+                >
+                <button
+                    type="button"
+                    class="sort-pill"
+                    data-sort="oldest"
+                    aria-pressed="false">Oldest</button
+                >
+            </div>
+        </div>
+
+        <section
+            id="photo-gallery"
+            aria-label="Selected photographs"
+            class="mx-auto grid max-w-[1400px] grid-cols-1 items-start gap-x-5 gap-y-10 px-gutter pb-24 sm:grid-cols-2 md:gap-y-14 lg:grid-cols-3 md:pb-36"
+        >
+            {
+                galleryPhotos.map((photo) => (
+                    <figure
+                        data-camera={photo.camera}
+                        data-date={new Date(`${photo.date} 1`).valueOf()}
+                    >
+                        <button
+                            type="button"
+                            class="photo-open group block w-full cursor-zoom-in overflow-hidden bg-surface text-left"
+                            data-viewer-avif-srcset={photo.viewerAvifSrcset}
+                            data-viewer-webp-srcset={photo.viewerWebpSrcset}
+                            data-viewer-fallback={photo.viewerFallback}
+                            data-alt={photo.alt}
+                            data-title={photo.title}
+                            data-width={photo.image.width}
+                            data-height={photo.image.height}
+                            aria-haspopup="dialog"
+                            aria-controls="photo-viewer"
+                            aria-label={`Open ${photo.title}`}
+                        >
+                            <Picture
+                                src={photo.image}
+                                alt={photo.alt}
+                                formats={["avif"]}
+                                fallbackFormat="webp"
+                                widths={[480, 800, 1200]}
+                                sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+                                quality="high"
+                                loading="lazy"
+                                draggable="false"
+                                class="h-auto w-full select-none transition-transform duration-500 ease-out motion-safe:group-hover:scale-[1.015] motion-reduce:transition-none"
+                            />
+                        </button>
+                        <figcaption class="mt-3 flex items-baseline justify-between gap-4">
+                            <h2 class="text-[0.9375rem] font-semibold">
+                                {photo.title}
+                            </h2>
+                            <p class="t-caption text-right">
+                                {photo.date} · {photo.camera}
+                            </p>
+                        </figcaption>
+                    </figure>
+                ))
+            }
+        </section>
+        </div>
+    </main>
+    <Footer />
+
+    <dialog
+        id="photo-viewer"
+        aria-labelledby="photo-viewer-title"
+        class="m-auto h-dvh max-h-none w-screen max-w-none border-0 bg-black/94 p-0 text-fg backdrop:bg-black/94"
+    >
+        <form method="dialog">
+            <button
+                class="fixed top-5 right-5 z-10 flex size-11 items-center justify-center rounded-full bg-black/60 text-2xl text-white transition-colors hover:bg-white hover:text-black"
+                autofocus
+                aria-label="Close photograph"
+            >
+                &times;
+            </button>
+        </form>
+        <div data-viewer-backdrop class="flex h-full w-full flex-col items-center justify-center gap-4 p-5 md:p-10">
+            <div data-viewer-frame class="relative shrink-0"></div>
+            <p id="photo-viewer-title" class="t-caption text-fg-muted"></p>
+        </div>
+    </dialog>
+</Layout>
+
+<style>
+    .photography-page {
+        --photo-scroll: 0;
+    }
+
+    .photography-word {
+        display: inline-block;
+        font-family: var(--font-serif);
+        font-size: 1.34em;
+        font-style: italic;
+        font-weight: 500;
+        line-height: 0.88;
+        letter-spacing: -0.055em;
+    }
+
+    .photo-hero {
+        background: var(--color-void);
+    }
+
+    .photo-hero-copy {
+        transform: translate3d(0, calc(var(--photo-scroll) * 0.12px), 0);
+        opacity: calc(1 - var(--photo-scroll) * 0.00105);
+        will-change: transform, opacity;
+    }
+
+    .filter-pill,
+    .sort-pill {
+        border: 1px solid var(--color-hairline-strong);
+        border-radius: 999px;
+        padding: 0.45rem 0.8rem;
+        color: var(--color-fg-muted);
+        font-size: 0.8125rem;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+            color 160ms ease,
+            background-color 160ms ease,
+            border-color 160ms ease;
+    }
+
+    .filter-pill:hover,
+    .sort-pill:hover {
+        color: var(--color-fg);
+        border-color: var(--color-fg-dim);
+    }
+
+    .filter-pill[aria-pressed="true"],
+    .sort-pill[aria-pressed="true"] {
+        color: var(--color-void);
+        background: var(--color-fg);
+        border-color: var(--color-fg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .photo-hero-copy {
+            transform: none;
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    import { setupPhotoViewer } from "@/classic/lib/photo-viewer";
+
+    setupPhotoViewer("#photo-viewer", "@/pages/.photo-open");
+
+    const gallery = document.querySelector<HTMLElement>("#photo-gallery");
+    const photos = Array.from(
+        document.querySelectorAll<HTMLElement>("#photo-gallery figure"),
+    );
+    const cameraButtons = Array.from(
+        document.querySelectorAll<HTMLButtonElement>(
+            "@/pages/.filter-pill[data-camera]",
+        ),
+    );
+    const sortButtons = Array.from(
+        document.querySelectorAll<HTMLButtonElement>("[data-sort]"),
+    );
+
+    const selectedCameras = new Set<string>();
+    let sort = "newest";
+
+    const updateGallery = () => {
+        photos
+            .sort((a, b) => {
+                const difference = Number(b.dataset.date) - Number(a.dataset.date);
+                return sort === "newest" ? difference : -difference;
+            })
+            .forEach((photo) => {
+                photo.hidden =
+                    selectedCameras.size > 0 &&
+                    !selectedCameras.has(photo.dataset.camera ?? "");
+                gallery?.append(photo);
+            });
+    };
+
+    cameraButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const camera = button.dataset.camera;
+            if (!camera) return;
+
+            if (selectedCameras.has(camera)) {
+                selectedCameras.delete(camera);
+            } else {
+                selectedCameras.add(camera);
+            }
+            button.setAttribute(
+                "aria-pressed",
+                String(selectedCameras.has(camera)),
+            );
+            updateGallery();
+        });
+    });
+
+    sortButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            sort = button.dataset.sort ?? "newest";
+            sortButtons.forEach((item) =>
+                item.setAttribute("aria-pressed", String(item === button)),
+            );
+            updateGallery();
+        });
+    });
+
+    updateGallery();
+
+    const photographyPage = document.querySelector<HTMLElement>(
+        "@/pages/.photography-page",
+    );
+    const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (photographyPage && !reduceMotion) {
+        let frame = 0;
+        const updateDepth = () => {
+            frame = 0;
+            const scroll = Math.min(window.scrollY, window.innerHeight * 1.15);
+            photographyPage.style.setProperty("--photo-scroll", String(scroll));
+        };
+        const requestDepth = () => {
+            if (!frame) frame = requestAnimationFrame(updateDepth);
+        };
+
+        updateDepth();
+        window.addEventListener("scroll", requestDepth, { passive: true });
+    }
+</script>
