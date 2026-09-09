@@ -1,0 +1,48 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import billionBrowse from '../../assets/products/billion-browse.png';
+import billionFeed from '../../assets/products/billion-feed.png';
+import quillium from '../../assets/products/quillium-revision.png';
+import '../../styles/resume-film.css';
+export function getStaticPaths() { return ['billion','quillium'].map(product => ({params:{product}})); }
+const isBillion = Astro.params.product === 'billion';
+const name = isBillion ? 'Billion' : 'Quillium';
+const points = isBillion ? [
+ ['Dual-Lens view', 'Progressive and conservative readings of the same bill, side by side.'],
+ ['Your ballot', 'Track what you’re voting on, and who is on the ballot.'],
+ ['Primary sources', 'Every summary cites the original documents.'],
+] : [
+ ['Branching drafts', 'Keep alternative versions inside the document until you choose one.'],
+ ['Local-first writing', 'One SQLite file on your disk, with crash-safe storage and offline access.'],
+ ['Anchored notes', 'Attach comments to the exact words they refer to.'],
+];
+---
+<Layout title={`${name} — Bryan Hu`}>
+ <main class="product-story">
+  <header><a href="/#build">← Back to my work</a><nav aria-label="Products"><a href="/products/billion" aria-current={isBillion ? 'page' : undefined}>Billion</a><a href="/products/quillium" aria-current={!isBillion ? 'page' : undefined}>Quillium</a></nav></header>
+  <section class="product-detail">
+   <div><p class="hand-note">{name}</p><h1>{isBillion ? <>Know what<br/>your government<br/><em>is doing.</em></> : <>Keep the<br/><em>better draft.</em></>}</h1>
+   <p class="product-description">{isBillion ? 'Most people find out what their government did after it has already changed their life. I’m building Billion to make bills, executive orders, and court rulings easier to follow.' : 'I built Quillium because I kept losing the better draft. Write a sentence three ways and decide later. Every version stays inside the document.'}</p>
+   {isBillion && <p class="product-origin">It started as my Congressional App Challenge entry, which placed 3rd in CA-19 in 2025, and grew into the product I’m building today.</p>}
+   <a class="text-link" href={isBillion ? 'https://www.billion-news.app/' : 'https://quillium.bryanhu.com/'}>{isBillion ? 'Explore Billion' : 'Explore Quillium'} ↗</a>
+   </div>
+   <div class:list={['product-art', {'product-phones':isBillion}]}>{isBillion ? <><img src={billionBrowse.src} alt="Billion Browse: recent bills with plain-language titles"/><img src={billionFeed.src} alt="Billion bill summary with political perspectives and a source link"/></> : <img src={quillium.src} alt="Quillium editor with alternative drafts and comments"/>}</div>
+  </section>
+  <section class="product-features" aria-label={`${name} features`}>{points.map(([title,body])=><article><h2>{title}</h2><p>{body}</p></article>)}</section>
+ </main>
+</Layout>
+<style>
+.product-story { --font-sketch:"Patrick Hand", cursive; --paper:#fffefb; --ink:#172036; --accent:#3473ff; background:var(--paper); color:var(--ink); min-height:100svh; padding:34px 6% 80px; }
+header,header nav { display:flex; justify-content:space-between; gap:26px; font:22px var(--font-sketch); }
+header a[aria-current] { color:var(--accent); text-decoration:underline; text-underline-offset:6px; }
+.product-detail { display:grid; grid-template-columns:1fr 1.2fr; gap:7%; align-items:center; padding:80px 0 64px; }
+h1 { font:clamp(58px,6vw,88px)/1.06 var(--font-sketch); margin:20px 0 28px; } h1 em { color:var(--accent); font-style:normal; }
+.product-description,.product-origin { font-size:16px; line-height:1.85; color:#515b6e; max-width:480px; margin-bottom:20px; }
+.product-art img { width:100%; height:auto; border:1px solid #17203660; border-radius:5px 10px 3px 8px; }
+.product-phones { display:flex; gap:24px; align-items:center; justify-content:center; }
+.product-phones img { width:43%; max-height:620px; object-fit:contain; }
+.product-phones img:last-child { margin-top:60px; }
+.product-features { display:grid; grid-template-columns:repeat(3,1fr); gap:5%; border-top:1px solid #17203640; padding-top:30px; }
+h2 { font:30px var(--font-sketch); margin-bottom:12px; } .product-features p { color:#515b6e; line-height:1.8; }
+@media(max-width:760px) { .product-detail { grid-template-columns:1fr; padding-top:44px; gap:40px; } .product-features { grid-template-columns:1fr; gap:28px; } header,header nav { gap:16px; font-size:19px; } }
+</style>

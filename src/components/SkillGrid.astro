@@ -1,0 +1,44 @@
+---
+import { Icon } from 'astro-icon/components';
+import { getAllRepositories } from '../lib/github';
+const repositories = (await getAllRepositories()).filter(repo=>repo.isPublic);
+const skills = [
+ {name:'Python',icon:'python',color:'#3572a5',languages:['Python'],body:'I build and maintain published Python libraries: async networking in aioudp, configurable HTML-to-Markdown conversion in unmarkd, and developer tooling in pyt2 and idae. That work includes API design, documentation, packaging, CI, and release automation.',repos:['aioudp','unmarkd','pyt2','idae','FADAIG']},
+ {name:'TypeScript',icon:'typescript',color:'#3178c6',languages:['TypeScript'],body:'I use TypeScript for full-stack products, including Billion and Quillium. My work spans interfaces, application architecture, editor state, revisions, annotations, and API integrations.',repos:['Quillium']},
+ {name:'JavaScript',icon:'javascript',color:'#8a7300',languages:['JavaScript'],body:'JavaScript is part of my web development toolkit, from browser interactions to application interfaces.',repos:[]},
+ {name:'Rust',icon:'rust',color:'#9b5638',languages:['Rust'],body:'My Rust work includes rust-but-lisp, a transpiler that turns Lisp-style expressions into Rust. I also use Tauri to package desktop tools, including a WebGL audio visualizer and a robotics scouting app.',repos:['rust-but-lisp']},
+ {name:'Java',icon:'openjdk',color:'#b15c15',languages:['Java'],body:'Java is part of my programming toolkit. My robotics work includes robot subsystems, simulation, control logic, and structured logging.',repos:[]},
+ {name:'C++',icon:'cplusplus',color:'#326a9f',languages:['C++'],body:'C++ is part of my programming toolkit alongside competitive algorithmic programming. My hardware work includes the Arduino firmware for FADAIG, a bot that physically plays Word Hunt.',repos:['FADAIG']},
+ {name:'React / Next.js',icon:'react',color:'#167b99',languages:[],body:'I use React and Next.js for full-stack app development. On Billion, I worked on the frontend and application architecture, web scraping, and AI-generated video feed integration.',repos:[],extra:{name:'billion',url:'https://github.com/billion-app/billion'}},
+ {name:'Svelte / SvelteKit',icon:'svelte',color:'#d64416',languages:['Svelte'],body:'My Svelte work includes LJV, a Lissajous visualizer with a WebGL2 shader pipeline, audio input, and Tauri desktop packaging.',repos:['ljv']},
+ {name:'Git',icon:'git',color:'#d44832',languages:[],body:'Maintaining open-source projects means working with versioned releases, CI, and contributions from other people. My Python project template pyt2 includes an automated publishing workflow.',repos:['pyt2']},
+ {name:'Docker',icon:'docker',color:'#167bb7',languages:[],body:'Docker is part of my development toolkit.',repos:[]},
+];
+---
+<div class="skill-explorer">
+ <h3>Skills</h3><p class="skill-hint">Pick a skill to see my work.</p>
+ <div class="skill-grid">{skills.map((skill,i)=><button type="button" aria-label={skill.name} title={skill.name} aria-expanded="false" aria-controls={`skill-${i}`} data-skill={i} style={`--skill-color:${skill.color}`}><Icon name={`simple-icons:${skill.icon}`}/></button>)}</div>
+ {skills.map((skill,i)=>{
+ const matches=repositories.filter(repo=>skill.repos.some(name=>name.toLowerCase()===repo.name.toLowerCase())||skill.languages.includes(repo.language||'')).sort((a,b)=>b.starCount-a.starCount).slice(0,6);
+ return <section id={`skill-${i}`} class="skill-detail" hidden aria-labelledby={`skill-title-${i}`}><h4 id={`skill-title-${i}`}>{skill.name}</h4><p>{skill.body}</p>{(matches.length>0||skill.extra)&&<><h5>Relevant repositories</h5><ul>{matches.map(repo=><li><a href={`https://github.com/ThatXliner/${repo.name}`}>{repo.name} ↗</a><span>{repo.body}</span></li>)}{skill.extra&&<li><a href={skill.extra.url}>{skill.extra.name} ↗</a></li>}</ul></>}</section>
+ })}
+</div>
+<script>
+ document.querySelectorAll<HTMLElement>('.skill-explorer').forEach(explorer=>{
+  const buttons=[...explorer.querySelectorAll<HTMLButtonElement>('[data-skill]')];
+  buttons.forEach(button=>button.addEventListener('click',()=>{
+   const open=button.getAttribute('aria-expanded')!=='true';
+   buttons.forEach(item=>{const selected=item===button&&open;item.setAttribute('aria-expanded',String(selected));explorer.querySelector<HTMLElement>(`#${item.getAttribute('aria-controls')}`)!.hidden=!selected;});
+  }));
+ });
+</script>
+<style>
+.skill-explorer { margin-top:42px; max-width:470px; }
+h3 { font:30px var(--font-sketch); margin-bottom:8px; }.skill-hint { color:#515b6e; font-size:13px; margin-bottom:18px; }
+.skill-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
+button { display:grid; place-items:center; aspect-ratio:1; border:1px solid #17203640; border-radius:4px 9px 3px 7px; color:var(--skill-color); background:#fffefb; cursor:pointer; }
+button svg { width:30px; height:30px; } button:hover,button[aria-expanded=true] { background:#edf2ff; border-color:#3473ff; }button:focus-visible {outline:2px solid #3473ff;outline-offset:3px;}
+.skill-detail { margin-top:22px; padding:22px; background:#edf2ff70; border:1px solid #3473ff40; border-radius:6px 12px 4px 8px; }
+.skill-detail[hidden] {display:none;}h4 {font:29px var(--font-sketch);margin-bottom:12px;} .skill-detail p {font-size:14px;line-height:1.8;color:#515b6e;}h5 {font:21px var(--font-sketch);margin:22px 0 10px;}ul {list-style:none;padding:0;}li {padding:10px 0;border-top:1px solid #17203620;}li a {font:21px var(--font-sketch);color:#3473ff;}li span {display:block;font-size:12px;line-height:1.7;color:#515b6e;margin-top:4px;}
+@media(max-width:760px){.skill-grid{gap:8px;}button svg{width:25px;height:25px;}}
+</style>

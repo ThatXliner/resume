@@ -15,7 +15,7 @@ export const resume = {
 
   awards: [
     {
-      label: "USACO Silver",
+      label: "USACO Silver — passed Bronze in 2023",
       description: "USA Computing Olympiad, competitive algorithmic programming",
       url: "https://usaco.org/",
     },
