@@ -1,4 +1,6 @@
 ---
+import PlayablePiano from "./PlayablePiano.astro";
+import { Icon } from "astro-icon/components";
 const year = new Date().getFullYear();
 const instruments = [
   { name: 'Piano', since: 2017, role: 'Solo pianist', awards: ['Certificate of Merit Level 10, State Honors', '3rd place, USOMC Intermediate Baroque (2023)'] },
@@ -7,11 +9,13 @@ const instruments = [
 ---
 <section class="notebook-section music" id="music" aria-labelledby="music-title">
   <div class="notebook-heading"><p class="hand-note">there’s usually music involved.</p><h2 id="music-title">Away from<br/><em>this keyboard…</em></h2>
-    <svg class="piano-drawing" viewBox="0 0 470 200" aria-hidden="true"><g stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 70 449 65l-3 104-427 4z" fill="var(--paper)"/><path d="m22 137 424-5M55 72l-2 98m33-98-2 98m34-99-2 99m34-100-2 100m34-100-2 99m34-100-2 100m34-101-2 100m34-100-2 100m34-101-2 100m34-101-2 100m34-101-2 100m34-101-2 100m34-101-2 100" fill="none"/>
-    <path d="m45 72 17-1-2 60-17 1zm32 0 17-1-2 59-17 1zm64-1 17-1-2 59-17 1zm32-1 17-1-2 60-17 1zm32 0 17-1-2 59-17 1zm64-1 17-1-2 59-17 1zm32-1 17-1-2 60-17 1zm64-1 17-1-2 60-17 1zm32-1 17-1-2 60-17 1z" fill="currentColor"/>
-    <path d="M117 40q-2-29 19-23v27m0-25 16-6v24M315 34V9l19-4v22" fill="none"/><ellipse cx="110" cy="43" rx="8" ry="5"/><ellipse cx="129" cy="46" rx="8" ry="5"/><ellipse cx="145" cy="39" rx="8" ry="5"/><ellipse cx="308" cy="36" rx="8" ry="5"/><ellipse cx="327" cy="29" rx="8" ry="5"/></g></svg>
+    <PlayablePiano />
     <p class="section-intro">I’m also a pianist and trombonist. I perform solo, play in concert and jazz bands, and release music.</p>
-    <div class="section-links"><a href="https://open.spotify.com/artist/3CfXIgxCs9Sv7eVgZzqSEj">Listen on Spotify ↗</a><a href="https://music.apple.com/us/artist/bryan-hu/1751789628">Apple Music ↗</a></div>
+    <div class="section-links"><a href="https://open.spotify.com/artist/3CfXIgxCs9Sv7eVgZzqSEj"><Icon name="simple-icons:spotify" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Listen on Spotify ↗</a><a href="https://music.apple.com/us/artist/bryan-hu/1751789628"><Icon name="simple-icons:applemusic" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Apple Music ↗</a></div>
   </div>
   <div class="instrument-notes">{instruments.map(instrument=><article><div class="instrument-heading"><h3>{instrument.name}</h3><span>{year-instrument.since} years</span></div><p class="role-label">{instrument.role} · since {instrument.since}</p><ul>{instrument.awards.map(award=><li>{award}</li>)}</ul></article>)}</div>
 </section>
+
+<style>
+.section-links a { display:inline-flex; align-items:center; gap:10px; }
+</style>

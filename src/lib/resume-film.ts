@@ -37,8 +37,8 @@ export async function initResumeFilm() {
   root.append(galleryControl);
   let galleryPitch = 0;
   let galleryPitchTarget = 0;
-  let galleryYaw = 0;
-  let galleryYawTarget = 0;
+  let galleryYaw = 2.8;
+  let galleryYawTarget = 2.8;
   const turnGallery = (amount: number) => {
     galleryYawTarget += amount;
     schedule();
@@ -250,70 +250,203 @@ export async function initResumeFilm() {
   galleryScene.background = new THREE.Color(0x111827);
   const galleryCamera = new THREE.PerspectiveCamera(65, 1, 0.1, 60);
   const galleryTarget = new THREE.WebGLRenderTarget(1024, 768);
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(16, 40, 24),
-    new THREE.MeshBasicMaterial({
-      color: 0x23324b,
-      side: THREE.BackSide,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.13,
-    }),
-  );
-  const floor = new THREE.GridHelper(40, 20, 0x34435e, 0x202d43);
-  floor.position.y = -6;
-  galleryScene.add(floor);
-  resources.add(floor.geometry);
-  for (const material of Array.isArray(floor.material)
-    ? floor.material
-    : [floor.material])
-    resources.add(material);
-  galleryScene.add(dome);
-  own(dome);
-  const galleryImages = Object.values(
-    import.meta.glob<string>("../assets/photography/*.webp", {
-      eager: true,
-      query: "?url",
-      import: "default",
-    }),
-  );
-  for (let row = -1; row <= 1; row++) {
-    for (let column = -4; column <= 3; column++) {
-      const theta = ((column + (row === 0 ? 0 : 0.45)) * Math.PI * 2) / 8;
-      const photo =
-        galleryImages[(column + 4 + (row + 1) * 8) % galleryImages.length];
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        side: THREE.DoubleSide,
-        toneMapped: false,
+  galleryScene.background = new THREE.Color(0xe6d9c4);
+  galleryScene.add(new THREE.HemisphereLight(0xfff1db, 0x765843, 2.1));
+  const sun = new THREE.DirectionalLight(0xffe3b3, 2.3);
+  sun.position.set(-4, 5, 3);
+  galleryScene.add(sun);
+  const roomMaterials = new Map<number, THREE.MeshStandardMaterial>();
+  function surface(color: number) {
+    if (!roomMaterials.has(color)) {
+      const material = new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.86,
       });
-      const print = new THREE.Mesh(
-        new THREE.PlaneGeometry(3.7, 2.45),
-        material,
-      );
-      const depth = 9 + ((column + 4) % 3) * 1.6 + Math.abs(row) * 1.2;
-      print.position.set(
-        Math.sin(theta) * depth,
-        row * 3.5 + Math.sin(column * 2) * 0.3,
-        -Math.cos(theta) * depth,
-      );
-      print.lookAt(0, 0, 0);
-      print.rotateZ(Math.sin(column * 3 + row) * 0.035);
-      galleryScene.add(print);
-      own(print);
-      new THREE.TextureLoader().load(photo, (texture) => {
-        if (disposed) {
-          texture.dispose();
-          return;
-        }
-        texture.colorSpace = THREE.SRGBColorSpace;
-        material.map = texture;
-        material.needsUpdate = true;
-        resources.add(texture);
-        schedule();
-      });
+      roomMaterials.set(color, material);
+      resources.add(material);
     }
+    return roomMaterials.get(color)!;
   }
+  function block(
+    w: number,
+    h: number,
+    d: number,
+    x: number,
+    y: number,
+    z: number,
+    color: number,
+    parent: THREE.Object3D = galleryScene,
+  ) {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), surface(color));
+    mesh.position.set(x, y, z);
+    parent.add(mesh);
+    resources.add(mesh.geometry);
+    return mesh;
+  }
+  // Enclosed plaster-and-oak living room, viewed from standing eye level.
+  block(16, 0.2, 16, 0, -3.1, 0, 0x9b7050);
+  for (let i = 0; i < 32; i++) {
+    block(
+      0.485,
+      0.025,
+      16,
+      -7.75 + i * 0.5,
+      -2.985,
+      0,
+      [0xa98260, 0xb08b69, 0x997251, 0xb89470][i % 4],
+    );
+    for (let j = 0; j < 4; j++)
+      block(
+        0.48,
+        0.028,
+        0.016,
+        -7.75 + i * 0.5,
+        -2.98,
+        -6 + j * 4 + (i % 2) * 1.8,
+        0x785638,
+      );
+  }
+  block(16, 0.2, 16, 0, 4.2, 0, 0xeee5d4);
+  for (const z of [-8, 8]) {
+    block(16, 7.2, 0.2, 0, 0.5, z, 0xded0b8);
+    block(16, 0.24, 0.25, 0, -2.8, z * 0.986, 0x876142);
+    block(16, 0.16, 0.3, 0, 3.95, z * 0.985, 0x9b7651);
+  }
+  for (const x of [-8, 8]) {
+    block(0.2, 7.2, 16, x, 0.5, 0, 0xe8dcc7);
+    block(0.25, 0.24, 16, x * 0.986, -2.8, 0, 0x876142);
+    block(0.3, 0.16, 16, x * 0.985, 3.95, 0, 0x9b7651);
+  }
+  for (const x of [-5, 0, 5]) block(0.18, 0.25, 16, x, 3.9, 0, 0x876142);
+  // Woven rug, low table, linen sofa, and cushions.
+  block(5.6, 0.04, 4.2, 0, -2.94, 2, 0x597377);
+  for (let i = 0; i < 9; i++)
+    block(5.3, 0.045, 0.04, 0, -2.91, 0.1 + i * 0.46, 0xc8b598);
+  block(3.8, 0.65, 1.35, 0, -2.3, 5.8, 0xb9ad8d);
+  block(3.8, 1.1, 0.35, 0, -1.8, 6.4, 0xc8bca1);
+  for (const x of [-1.9, 1.9]) block(0.35, 0.9, 1.5, x, -2.1, 5.8, 0xb9ad8d);
+  for (const x of [-1.15, 0, 1.15])
+    block(1.05, 0.18, 1.05, x, -1.89, 5.65, 0xd3c8b1);
+  block(0.7, 0.65, 0.23, -1.2, -1.4, 6.12, 0x8b5847);
+  block(0.65, 0.65, 0.23, 1.2, -1.4, 6.12, 0x657669);
+  block(2.8, 0.16, 1.5, 0, -1.95, 2.4, 0x79573d);
+  for (const x of [-1.1, 1.1])
+    for (const z of [1.9, 2.9]) block(0.1, 0.95, 0.1, x, -2.5, z, 0x523d2f);
+  block(0.7, 0.09, 0.5, -0.4, -1.8, 2.4, 0x394d60);
+  block(0.55, 0.07, 0.43, -0.35, -1.72, 2.4, 0xc6a176);
+  // Built-in bookcase with individual shelves and books.
+  block(3.5, 2.8, 0.65, -5.5, -1.5, 7.55, 0x755437);
+  for (let row = 0; row < 3; row++) {
+    block(3.3, 0.1, 0.7, -5.5, -2.65 + row * 0.85, 7.17, 0xb08c63);
+    for (let i = 0; i < 13; i++)
+      block(
+        0.16,
+        0.42 + (i % 3) * 0.09,
+        0.32,
+        -7 + i * 0.24,
+        -2.38 + row * 0.85,
+        7.08,
+        [0x566b63, 0xa97753, 0xd5c49d, 0x46586b, 0x8f5146][i % 5],
+      );
+  }
+  // A warm floor lamp and a leafy plant anchor the corners.
+  block(0.08, 2.6, 0.08, 5.5, -1.6, 5.6, 0x66513c);
+  const shade = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.4, 0.7, 0.75, 32, 1, true),
+    new THREE.MeshStandardMaterial({
+      color: 0xffe9bc,
+      side: THREE.DoubleSide,
+      emissive: 0xc7883c,
+      emissiveIntensity: 0.35,
+    }),
+  );
+  shade.position.set(5.5, -0.15, 5.6);
+  galleryScene.add(shade);
+  own(shade);
+  const lamp = new THREE.PointLight(0xffc786, 18, 9, 2);
+  lamp.position.set(5.5, -0.1, 5.6);
+  galleryScene.add(lamp);
+  const pot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.45, 0.32, 0.7, 24),
+    surface(0xa56d51),
+  );
+  pot.position.set(-6.6, -2.6, -6.5);
+  galleryScene.add(pot);
+  own(pot);
+  for (let i = 0; i < 9; i++) {
+    const leaf = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 12, 8),
+      surface(i % 2 ? 0x566e40 : 0x6f8552),
+    );
+    leaf.scale.set(0.2, 0.65, 0.09);
+    leaf.position.set(
+      -6.6 + Math.sin(i * 2) * 0.4,
+      -1.7 + (i % 3) * 0.3,
+      -6.5 + Math.cos(i * 2) * 0.3,
+    );
+    leaf.rotation.z = Math.sin(i) * 0.6;
+    galleryScene.add(leaf);
+    own(leaf);
+  }
+  const galleryImages = [
+    ...new Set(
+      Object.values(
+        import.meta.glob<string>("../assets/photography/*.webp", {
+          eager: true,
+          query: "?url",
+          import: "default",
+        }),
+      ),
+    ),
+  ];
+  // Each source is used once. Never wrap around the array to fill empty slots.
+  root.dataset.galleryPhotoCount = String(galleryImages.length);
+  galleryImages.forEach((photo, index) => {
+    const wall = index % 4;
+    const slot = Math.floor(index / 4);
+    const column = slot % 4;
+    const row = Math.floor(slot / 4);
+    const mount = new THREE.Group();
+    const along = -5.4 + column * 3.6;
+    const height = row === 0 ? 1.25 : 3;
+    if (wall === 0) {
+      mount.position.set(along, height, -7.82);
+    }
+    if (wall === 1) {
+      mount.position.set(7.82, height, along);
+      mount.rotation.y = -Math.PI / 2;
+    }
+    if (wall === 2) {
+      mount.position.set(-along, height, 7.82);
+      mount.rotation.y = Math.PI;
+    }
+    if (wall === 3) {
+      mount.position.set(-7.82, height, -along);
+      mount.rotation.y = Math.PI / 2;
+    }
+    galleryScene.add(mount);
+    new THREE.TextureLoader().load(photo, (texture) => {
+      if (disposed) {
+        texture.dispose();
+        return;
+      }
+      texture.colorSpace = THREE.SRGBColorSpace;
+      resources.add(texture);
+      const ratio = texture.image.width / texture.image.height;
+      const w = Math.min(2.65, 1.6 * ratio),
+        h = w / ratio;
+      block(w + 0.22, h + 0.22, 0.1, 0, 0, 0, 0x654a35, mount);
+      block(w + 0.1, h + 0.1, 0.02, 0, 0, 0.06, 0xf6efdf, mount);
+      const print = new THREE.Mesh(
+        new THREE.PlaneGeometry(w, h),
+        new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }),
+      );
+      print.position.z = 0.075;
+      mount.add(print);
+      own(print);
+      schedule();
+    });
+  });
   function draw() {
     frame = 0;
     if (disposed || document.hidden) return;

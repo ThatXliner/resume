@@ -145,7 +145,7 @@ export const resume = {
       name: "VC Assist",
       role: "CEO",
       description:
-        "Student-run non-profit enhancing digital educational infrastructure at Valley Christian Schools. Built and maintained the full-stack platform (frontend, backend, web scrapers); later led a full frontend rewrite to improve performance and UX.",
+        "Joined in eighth grade and later became CEO of the student-run non-profit enhancing digital educational infrastructure at Valley Christian Schools. Built and maintained the full-stack platform (frontend, backend, web scrapers); later led a full frontend rewrite to improve performance and UX.",
       url: "https://vcassist.org",
       learned: "Non-profit leadership, full-stack architecture, web scraping at scale, frontend performance",
       whatIDid: "Built the original full-stack platform including frontend, backend, and web scrapers; later led a complete frontend rewrite",
