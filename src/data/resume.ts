@@ -30,30 +30,37 @@ export const resume = {
     {
       label: "Creativity Award — Daly Division (Champs)",
       year: 2025,
+      url: "https://www.thebluealliance.com/event/2025dal#awards",
     },
     {
       label: "Excellence in Engineering — Contra Costa Regional",
       year: 2025,
+      url: "https://www.thebluealliance.com/event/2025capt#awards",
     },
     {
       label: "Innovation in Control — Ventura County Regional",
       year: 2025,
+      url: "https://www.thebluealliance.com/event/2025cave#awards",
     },
     {
       label: "Engineering Inspiration — San Francisco Regional",
       year: 2025,
+      url: "https://www.thebluealliance.com/event/2025casf#awards",
     },
     {
       label: "Judges' Award — Capital City Classic",
       year: 2025,
+      url: "https://www.thebluealliance.com/event/2025cacc#awards",
     },
     {
       label: "Regional Finalists — Silicon Valley Regional",
       year: 2024,
+      url: "https://www.thebluealliance.com/event/2024casj#awards",
     },
     {
       label: "Engineering Inspiration — Arizona Valley Regional",
       year: 2024,
+      url: "https://www.thebluealliance.com/event/2024azva#awards",
     },
   ],
 

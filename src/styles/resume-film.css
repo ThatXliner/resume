@@ -770,20 +770,6 @@
   font-size: 21px;
   padding-bottom: 3px;
 }
-.upstream-work {
-  margin-top: 35px;
-  border-left: 2px solid var(--accent);
-  padding-left: 18px;
-}
-.upstream-work h3 {
-  font-size: 22px;
-}
-.upstream-work p {
-  font-size: 12px;
-  line-height: 1.9;
-  color: var(--muted);
-  margin-top: 10px;
-}
 .community {
   background: var(--soft-blue);
 }
@@ -1016,7 +1002,7 @@
 }
 
 .film[data-cinema]:not([data-static]) .gallery-chapter {
-  height: 600svh;
+  height: 300svh;
 }
 .film[data-cinema]:not([data-static]) .camera-chapter {
   height: 230svh;
@@ -1091,3 +1077,27 @@
 
 .resume-download { display:inline-flex; align-items:center; gap:18px; margin-top:24px; padding:10px 17px; border:1.5px solid currentColor; border-radius:4px 9px 3px 6px; font:23px var(--font-sketch); color:var(--accent); }
 .resume-download:hover { background:#edf2ff; }
+
+/* Keep the introduction, instrument and actions in one flowing column. */
+.opening-heading {
+  top: 126px;
+  bottom: 5svh;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+.opening h1 { font-size: clamp(64px, min(9vw, 11svh), 140px); flex-shrink: 0; }
+.opening-intro { margin-top: 8px; }
+.opening-heading .playable-piano { width: 360px; max-width: 100%; margin: 0; flex-shrink: 0; transform: translateY(0px); }
+.opening-heading .piano-notes { height: 38px; font-size: 32px; }
+.opening-heading .piano-keys { height: 85px; }
+.opening-heading .piano-help { margin-top: 10px; font-size: 16px; }
+.opening-heading .piano-help span { display: block; font-size: 13px; }
+.opening-heading .opening-foot { position: static; flex-wrap: wrap; flex-shrink: 0; }
+@media(max-width:760px) {
+  .opening-heading { top: 120px; bottom: 5svh; right: 8%; gap: 14px; }
+  .opening h1 { font-size: min(21vw, 12svh); }
+  .opening-intro { margin-top: 6px; }
+}

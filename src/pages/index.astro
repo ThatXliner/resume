@@ -1,4 +1,6 @@
 ---
+import PlayablePiano from '../components/PlayablePiano.astro';
+import Nav from '../components/Nav.astro';
 import SkillGrid from '../components/SkillGrid.astro';
 import Layout from '../layouts/Layout.astro';
 import CommunityStory from '../components/CommunityStory.astro';
@@ -13,17 +15,14 @@ import '../styles/resume-film.css';
 <Layout title="Bryan Hu — Developer, Photographer & Musician">
   <div class="film" id="top">
     <a class="skip-film" href="#index">Skip to résumé</a>
-    <header class="film-nav">
-      <a class="wordmark" href="#top" aria-label="Bryan Hu, back to beginning"><img src="/profile.png" width="34" height="34" alt=""/>Bryan Hu</a>
-<nav aria-label="Main navigation"><a href="#build">Projects</a><a href="#open-source">Open source</a><a href="#frames">Photos</a><a href="#music">Music</a><a href="#index">Résumé</a><a href="#contact">Contact</a></nav>
-    </header>
+    <Nav />
     <div class="film-stage" aria-hidden="true"><canvas id="film-canvas"></canvas></div>
     <div class="film-status" role="status">Loading 3D models…</div>
     <main>
       <section class="film-chapter opening" id="intro" data-scene="0">
         <div class="chapter-frame">
-          <div class="opening-heading"><h1>Hi, I’m<br/><em>Bryan.</em></h1><p class="opening-intro">I build apps and open-source tools.<br/>I also make photographs and music.</p></div>
-          <div class="opening-foot"><a href="#build">Explore my work <span>↓</span></a><a class="resume-jump" href="#index">See my resume <span aria-hidden="true">↓</span></a></div>
+          <div class="opening-heading"><h1>Hi, I’m<br/><em>Bryan.</em></h1><p class="opening-intro">I build apps and open-source tools.<br/>I also make photographs and music.</p><PlayablePiano />
+          <div class="opening-foot"><a href="#build">Explore my work <span>↓</span></a><a class="resume-jump" href="#index">See my resume <span aria-hidden="true">↓</span></a></div></div>
 
         </div>
       </section>
@@ -40,7 +39,7 @@ import '../styles/resume-film.css';
       <MusicStory />
       <section class="resume-index" id="index">
         <div class="index-heading"><h2>Résumé</h2><a class="resume-download" href="/resume.pdf" download="BryanHu_Resume.pdf">Download résumé PDF <span aria-hidden="true">↓</span></a><address class="resume-contact" id="contact"><a href={`mailto:${resume.email}`}>{resume.email}</a><div><a href={`https://github.com/${resume.github}`}>GitHub ↗</a><a href={`https://www.linkedin.com/in/${resume.linkedin}/`}>LinkedIn ↗</a></div></address><SkillGrid /></div>
-        <div class="index-details"><h3>Selected recognition</h3><div class="award-row"><span>Congressional App Challenge 2025</span><b>3rd place / CA-19</b></div>{resume.awards.map(item => <a class="award-row" href={item.url}><span>{item.label}</span><b>↗</b></a>)}<h3>Robotics · FRC Team 3256</h3>{resume.frcAwards.map(award => <div class="award-row"><span>{award.label}</span><b>{award.year}</b></div>)}</div>
+        <div class="index-details"><h3>Selected recognition</h3><div class="award-row"><span>Congressional App Challenge 2025</span><b>3rd place / CA-19</b></div>{resume.awards.map(item => <a class="award-row" href={item.url}><span>{item.label}</span><b>↗</b></a>)}<h3>Robotics · FRC Team 3256</h3>{resume.frcAwards.map(award => <a class="award-row" href={award.url}><span>{award.label} ↗</span><b>{award.year}</b></a>)}</div>
       </section>
       <StoryPath />
     </main>

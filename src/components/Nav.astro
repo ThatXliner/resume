@@ -1,5 +1,5 @@
 ---
-const links=[['Projects','/#build'],['Open source','/#open-source'],['Photos','/photography'],['Music','/#music'],['Résumé','/#index'],['Contact','/#contact']];
+const links=[['Projects','/thelist'],['Photos','/photography'],['Résumé','/resume.pdf'],['Contact','/contact']];
 ---
 <header class="site-nav"><a class="site-wordmark" href="/"><img src="/profile.png" width="34" height="34" alt=""/>Bryan Hu</a><nav aria-label="Main navigation">{links.map(([label,href])=><a href={href} aria-current={Astro.url.pathname.replace(/\/$/,'')===href?'page':undefined}>{label}</a>)}</nav></header>
 <style>

@@ -1,5 +1,5 @@
 ---
-import PlayablePiano from "./PlayablePiano.astro";
+import PlayableTrombone from "./PlayableTrombone.astro";
 import { Icon } from "astro-icon/components";
 const year = new Date().getFullYear();
 const instruments = [
@@ -8,8 +8,8 @@ const instruments = [
 ];
 ---
 <section class="notebook-section music" id="music" aria-labelledby="music-title">
-  <div class="notebook-heading"><p class="hand-note">there’s usually music involved.</p><h2 id="music-title">Away from<br/><em>this keyboard…</em></h2>
-    <PlayablePiano />
+  <div class="notebook-heading"><p class="hand-note">there’s usually music involved.</p><h2 id="music-title">Away from<br/><em>the screen…</em></h2>
+    <PlayableTrombone />
     <p class="section-intro">I’m also a pianist and trombonist. I perform solo, play in concert and jazz bands, and release music.</p>
     <div class="section-links"><a href="https://open.spotify.com/artist/3CfXIgxCs9Sv7eVgZzqSEj"><Icon name="simple-icons:spotify" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Listen on Spotify ↗</a><a href="https://music.apple.com/us/artist/bryan-hu/1751789628"><Icon name="simple-icons:applemusic" aria-hidden="true" style="width:22px;height:22px;flex-shrink:0"/>Apple Music ↗</a></div>
   </div>

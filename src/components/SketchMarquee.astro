@@ -44,7 +44,7 @@ const rows = [0, 1].map(parity => repositories.filter(repo => repo.starCount >= 
 .sketch-marquee { margin-top: 42px; min-width: 0; }
 .sketch-marquee-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; font:20px var(--font-sketch); color:var(--accent); }
 .sketch-marquee-heading button { font:16px var(--font-sketch); color:var(--ink); background:transparent; border:1px solid currentColor; border-radius:3px 7px 2px 5px; padding:3px 10px; cursor:pointer; }
-.sketch-marquee-row { display:flex; overflow:hidden; margin:0 0 14px; padding:5px 0; }
+.sketch-marquee-row { display:flex; overflow:hidden; margin:0 0 14px; padding:5px 0; --edge-fade:clamp(20px, 8%, 48px); mask-image:linear-gradient(to right, transparent, #000 var(--edge-fade), #000 calc(100% - var(--edge-fade)), transparent); }
 .sketch-marquee-copy { display:flex; flex-shrink:0; gap:14px; padding-right:14px; animation:sketch-drift 85s linear infinite; }
 .sketch-marquee-row:nth-child(3) .sketch-marquee-copy { animation-direction:reverse; animation-duration:95s; }
 .sketch-marquee-copy a { width:235px; flex-shrink:0; display:flex; flex-direction:column; padding:16px; border:1.3px solid var(--ink); border-radius:3px 9px 4px 7px; background:#edf2ff66; color:var(--ink); text-decoration:none; }

@@ -1,3 +1,4 @@
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import quilliumScreen from "../assets/products/quillium-revision.png?url";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -114,6 +115,8 @@ export async function initResumeFilm() {
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
   camera.position.set(0, 0, 10);
@@ -221,10 +224,15 @@ export async function initResumeFilm() {
       if (y >= chapters[i].offsetTop) index = i;
     const start = chapters[index].offsetTop;
     const duration = chapters[index].offsetHeight;
-    return (
-      Number(chapters[index].dataset.scene) +
-      clamp((y - start) / duration, 0, 1)
-    );
+    const progress = clamp((y - start) / duration, 0, 1);
+    const scene = Number(chapters[index].dataset.scene);
+    if (scene === 4) {
+      // Exploration is optional; most of the scroll space belongs to the photos.
+      if (progress < .2) return 4 + progress / .2 * .42;
+      if (progress < .35) return 4.42 + (progress - .2) / .15 * .23;
+      return 4.65 + (progress - .35) / .65 * .35;
+    }
+    return scene + progress;
   }
   function pose(group: THREE.Group, poses: number[][], value: number) {
     const index = Math.min(Math.floor(value), poses.length - 1);
@@ -253,8 +261,14 @@ export async function initResumeFilm() {
   galleryScene.background = new THREE.Color(0xe6d9c4);
   galleryScene.add(new THREE.HemisphereLight(0xfff1db, 0x765843, 2.1));
   const sun = new THREE.DirectionalLight(0xffe3b3, 2.3);
+  sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+  Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:.1,far:35});
+  sun.shadow.normalBias=.035;sun.shadow.radius=3;
   sun.position.set(-4, 5, 3);
   galleryScene.add(sun);
+  const grainData=new Uint8Array(128*128*4);
+  for(let y=0;y<128;y++)for(let x=0;x<128;x++){const at=(y*128+x)*4;const n=220+Math.round(15*Math.sin(x*.7+Math.sin(y*.07)*2)+8*Math.sin(x*2.7+y*.04));grainData[at]=grainData[at+1]=grainData[at+2]=n;grainData[at+3]=255;}
+  const grain=new THREE.DataTexture(grainData,128,128);grain.wrapS=grain.wrapT=THREE.RepeatWrapping;grain.repeat.set(3,3);grain.needsUpdate=true;resources.add(grain);
   const roomMaterials = new Map<number, THREE.MeshStandardMaterial>();
   function surface(color: number) {
     if (!roomMaterials.has(color)) {
@@ -262,6 +276,7 @@ export async function initResumeFilm() {
         color,
         roughness: 0.86,
       });
+      if ([0x9b7050,0xa98260,0xb08b69,0x997251,0xb89470,0x79573d,0x755437,0x876142].includes(color)){material.map=grain;material.bumpMap=grain;material.bumpScale=.025;}
       roomMaterials.set(color, material);
       resources.add(material);
     }
@@ -277,7 +292,9 @@ export async function initResumeFilm() {
     color: number,
     parent: THREE.Object3D = galleryScene,
   ) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), surface(color));
+    const soft=[0xb9ad8d,0xc8bca1,0xd3c8b1,0x8b5847,0x657669].includes(color);
+    const mesh = new THREE.Mesh(soft?new RoundedBoxGeometry(w,h,d,4,Math.min(w,h,d)*.22):new THREE.BoxGeometry(w,h,d), surface(color));
+    mesh.castShadow=true;mesh.receiveShadow=true;
     mesh.position.set(x, y, z);
     parent.add(mesh);
     resources.add(mesh.geometry);
@@ -373,20 +390,17 @@ export async function initResumeFilm() {
   pot.position.set(-6.6, -2.6, -6.5);
   galleryScene.add(pot);
   own(pot);
-  for (let i = 0; i < 9; i++) {
-    const leaf = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 12, 8),
-      surface(i % 2 ? 0x566e40 : 0x6f8552),
-    );
-    leaf.scale.set(0.2, 0.65, 0.09);
-    leaf.position.set(
-      -6.6 + Math.sin(i * 2) * 0.4,
-      -1.7 + (i % 3) * 0.3,
-      -6.5 + Math.cos(i * 2) * 0.3,
-    );
-    leaf.rotation.z = Math.sin(i) * 0.6;
-    galleryScene.add(leaf);
-    own(leaf);
+  pot.castShadow=true;pot.receiveShadow=true;
+  const soil=new THREE.Mesh(new THREE.CylinderGeometry(.405,.405,.045,32),surface(0x3c2d22));soil.position.set(-6.6,-2.24,-6.5);galleryScene.add(soil);own(soil);
+  const lip=new THREE.Mesh(new THREE.TorusGeometry(.435,.045,10,40),surface(0xa56d51));lip.rotation.x=Math.PI/2;lip.position.set(-6.6,-2.25,-6.5);galleryScene.add(lip);own(lip);
+  for(let i=0;i<11;i++) {
+    const angle=i*2.399, reach=.35+(i%3)*.13, height=.95+(i%4)*.22;
+    const base=new THREE.Vector3(-6.6,-2.23,-6.5);
+    const end=new THREE.Vector3(-6.6+Math.cos(angle)*reach,-2.23+height,-6.5+Math.sin(angle)*reach);
+    const curve=new THREE.QuadraticBezierCurve3(base,base.clone().add(new THREE.Vector3(Math.cos(angle)*.1,height*.8,Math.sin(angle)*.1)),end);
+    const stem=new THREE.Mesh(new THREE.TubeGeometry(curve,12,.018,6,false),surface(0x52603c));galleryScene.add(stem);own(stem);
+    const leaf=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),surface(i%2?0x405e36:0x647e47));
+    leaf.scale.set(.21,.38,.035);leaf.position.copy(end);leaf.rotation.set(.25,angle,-.5*Math.cos(angle));leaf.castShadow=true;galleryScene.add(leaf);own(leaf);
   }
   const galleryImages = [
     ...new Set(
@@ -408,7 +422,7 @@ export async function initResumeFilm() {
     const row = Math.floor(slot / 4);
     const mount = new THREE.Group();
     const along = -5.4 + column * 3.6;
-    const height = row === 0 ? 1.25 : 3;
+    const height = row === 0 ? .85 : 3.15;
     if (wall === 0) {
       mount.position.set(along, height, -7.82);
     }
@@ -433,7 +447,7 @@ export async function initResumeFilm() {
       texture.colorSpace = THREE.SRGBColorSpace;
       resources.add(texture);
       const ratio = texture.image.width / texture.image.height;
-      const w = Math.min(2.65, 1.6 * ratio),
+      const w = Math.min(3.15, 1.95 * ratio),
         h = w / ratio;
       block(w + 0.22, h + 0.22, 0.1, 0, 0, 0, 0x654a35, mount);
       block(w + 0.1, h + 0.1, 0.02, 0, 0, 0.06, 0xf6efdf, mount);
@@ -639,7 +653,7 @@ export async function initResumeFilm() {
   const visibilityChange = () => {
     if (!document.hidden) onScroll();
   };
-  const chapterStops = [0, 0.08, 0.08, 0.35];
+  const chapterStops = [0, 0.08, 0.08, 0.08];
   const chapterNavigation = (event: MouseEvent) => {
     if (
       event.button !== 0 ||

@@ -65,6 +65,7 @@ const galleryPhotos = await Promise.all(
                 >
                     Capturing the beauty of God's world, one click at a time.
                 </p>
+                <a class="photo-hire" href="/contact">Hire me <span aria-hidden="true">→</span></a>
             </header>
 
         </section>
@@ -182,6 +183,31 @@ const galleryPhotos = await Promise.all(
 </Layout>
 
 <style>
+    .photo-hire {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: 24px;
+        margin-top: 28px;
+        padding: 12px 25px;
+        border: 2px solid #172036;
+        border-radius: 14px 5px 12px 4px;
+        background: #3473ff;
+        color: #fff;
+        font: 26px var(--font-sketch);
+    }
+    .photo-hire:hover { background: #255edb; }
+    .photo-hire:focus-visible { outline: 3px solid #3473ff; outline-offset: 5px; }
+
+    /* A neutral white mat, outside the image so its aspect ratio stays intact. */
+    #photo-viewer [data-viewer-frame] {
+        outline: clamp(6px, 1vw, 14px) solid #fff;
+    }
+
+    #photo-viewer-title {
+        color: #ddd;
+    }
+
     .photography-page {
         --photo-scroll: 0;
     }
